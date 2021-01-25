@@ -1,0 +1,53 @@
+---
+name: "Reporting Delays Intermediate"
+author: "HIV Estimates Accuracy tool"
+title: "Reporting Delays"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_fragment:
+    number_sections: no
+    smart: yes
+    fig_caption: yes
+params:
+  InputData: NA
+editor_options:
+  chunk_output_type: console
+---
+```{r setup, include = FALSE}
+require(hivEstimatesAccuracy2, quietly = TRUE)
+knitr::opts_chunk$set(echo = FALSE, results = "asis", message = FALSE, warning = FALSE, include = TRUE)
+calcFigHeight <- function(plot) {
+  height <- 0.5
+  if (!is.null(plot$layout$layout$ROW)) {
+    height <- height + max(plot$layout$layout$ROW) * 2
+  }
+
+  return(height)
+}
+formatNumbers <- function(x) sprintf("%.2f", x)
+```
+
+```{r}
+cat(sprintf("# %d. Reporting Delays", params$InputData$RunIdx))
+```
+
+```{r, eval = {!is.null(params$InputData$Artifacts$OutputPlotTotal)}, fig.width = 10, fig.height = 4}
+print(params$InputData$Artifacts$OutputPlotTotal$plot)
+```
+
+```{r, eval = {!is.null(params$InputData$Artifacts$OutputPlotStrat$Gender)}, fig.width = 10, fig.height = calcFigHeight(params$InputData$Artifacts$OutputPlotStrat$Gender)}
+print(params$InputData$Artifacts$OutputPlotStrat$Gender$plot)
+```
+
+```{r, eval = {!is.null(params$InputData$Artifacts$OutputPlotStrat$Transmission)}, fig.width = 10, fig.height = calcFigHeight(params$InputData$Artifacts$OutputPlotStrat$Transmission)}
+print(params$InputData$Artifacts$OutputPlotStrat$Transmission$plot)
+```
+
+```{r, eval = {!is.null(params$InputData$Artifacts$OutputPlotStrat$GroupedRegionOfOrigin)}, fig.width = 10, fig.height = calcFigHeight(params$InputData$Artifacts$OutputPlotStrat$GroupedRegionOfOrigin)}
+print(params$InputData$Artifacts$OutputPlotStrat$GroupedRegionOfOrigin$plot)
+```
+
+```{r, eval = {!is.null(params$InputData$Artifacts$UnivAnalysis) && nrow(params$InputData$Artifacts$UnivAnalysis) > 0}}
+dt <- params$InputData$Artifacts$UnivAnalysis
+knitr::kable(dt, align = rep("r", ncol(dt)))
+```

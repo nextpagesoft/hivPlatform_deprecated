@@ -1,0 +1,7 @@
+* text eol=lf
+*.ttf -text diff
+*.pdf -text diff
+*.RDS -text diff
+*.rda -text diff
+*.png -text diff
+*.zip -text diff

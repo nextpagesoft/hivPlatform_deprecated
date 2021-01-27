@@ -8,7 +8,7 @@
 #' ConvertStringToDate(str = c(
 #'   NA_character_, 'UNK', '', '2020', '2020-Q1', '2020-Q02', '2020/Q2', 'Q1-2020', 'Q03-2020',
 #'   '2020/q2', 'q1-2020', 'Q04/2020', '2020-W01', '2020-W45', '2020-w40', 'W02-2020', 'w10-2020',
-#'   '2020-05-20', '2020/1/10', '20/5/2020'
+#'   '2020-05-20', '2020/1/10', '20/5/2020', '2020-1', '2020-02', '2020/06', '05-2020', '6/2020'
 #' ))
 #'
 #' @export
@@ -21,6 +21,8 @@ ConvertStringToDate <- function(
   isYear <- grepl('^[0-9]{4}$', str)
   isQuarter1 <- grepl('^[0-9]{4}-(Q|q)[0-9]{1,2}$', str)
   isQuarter2 <- grepl('^(Q|q)[0-9]{1,2}-[0-9]{4}$', str)
+  isMonth1 <- grepl('^[0-9]{4}-[0-9]{1,2}$', str)
+  isMonth2 <- grepl('^[0-9]{1,2}-[0-9]{4}$', str)
   isWeek1 <- grepl('^[0-9]{4}-(W|w)[0-9]{1,2}$', str)
   isWeek2 <- grepl('^(W|w)[0-9]{1,2}-[0-9]{4}$', str)
   isDate1 <- grepl('^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$', str)
@@ -39,6 +41,17 @@ ConvertStringToDate <- function(
   years <- as.integer(sapply(strs, '[[', 2))
   months <- as.integer(sub('^(Q|q)', '', sapply(strs, '[[', 1))) * 3 - 1
   dates[isQuarter2] <- as.Date(sprintf('%s-%s-15', years, months), tz = 'UTC')
+
+  # Expand month to date (mid month)
+  strs <- strsplit(str[isMonth1], '-')
+  years <- as.integer(sapply(strs, '[[', 1))
+  months <- as.integer(sapply(strs, '[[', 2))
+  dates[isMonth1] <- as.Date(sprintf('%s-%s-15', years, months), tz = 'UTC')
+
+  strs <- strsplit(str[isMonth2], '-')
+  years <- as.integer(sapply(strs, '[[', 2))
+  months <- as.integer(sapply(strs, '[[', 1))
+  dates[isMonth2] <- as.Date(sprintf('%s-%s-15', years, months), tz = 'UTC')
 
   # Expand week to date (mid week)
   strs <- strsplit(str[isWeek1], '-')

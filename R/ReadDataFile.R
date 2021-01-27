@@ -20,8 +20,11 @@
 #' }
 #'
 #' @export
-ReadDataFile <- function(fileName, fileType, ...)
-{
+ReadDataFile <- function(
+  fileName,
+  fileType,
+  ...
+) {
   stopifnot(!missing(fileName))
 
   localFileName <- fileName
@@ -54,7 +57,7 @@ ReadDataFile <- function(fileName, fileType, ...)
     'txt'  = ReadTextFile(localFileName, colClasses = 'character', ...),
     'csv'  = ReadTextFile(localFileName, colClasses = 'character', ...),
     'rds'  = ReadRdsFile(localFileName, ...),
-    {'Unsupported file extension'}
+    'Unsupported file extension'
   )
 
   return(data)

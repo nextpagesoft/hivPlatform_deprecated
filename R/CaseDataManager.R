@@ -280,7 +280,7 @@ CaseDataManager <- R6::R6Class(
           private$Catalogs$AdjustmentTask <- Task$new(
             function(data, adjustmentSpecs) {
               suppressMessages(pkgload::load_all())
-              options(width = 100)
+              options(width = 120)
               result <- hivEstimatesAccuracy2::RunAdjustments(
                 data = data,
                 adjustmentSpecs = adjustmentSpecs,

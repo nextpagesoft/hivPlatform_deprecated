@@ -489,9 +489,9 @@ GetMainReportArtifacts <- function(
     return(dt)
   }
 
-  optReportingDelay <- as.logical(params$ReportingDelay)
-  optSmoothing <- as.logical(params$Smoothing)
-  optCD4ConfInt <- as.logical(params$CD4ConfInt)
+  optReportingDelay <- as.logical(params$reportingDelay)
+  optSmoothing <- as.logical(params$smoothing)
+  optCD4ConfInt <- as.logical(params$cd4ConfInt)
 
   finalDataIdx <- length(params$AdjustedData)
   fullData <- copy(params$AdjustedData[[finalDataIdx]]$Data)

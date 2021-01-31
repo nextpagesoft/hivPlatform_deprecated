@@ -26,7 +26,7 @@ list(
     attribute = 'Gender',
     description = 'Gender',
     type = 'character',
-    values = c('', 'UNK', 'F', 'M', 'O'),
+    values = c('', 'UNK', 'NA', NA_character_, 'F', 'M', 'O'),
     defaultValue = NA_character_,
     candidateOrigColNames = c('gender')
   ),

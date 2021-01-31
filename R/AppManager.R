@@ -30,6 +30,7 @@ AppManager <- R6::R6Class(
       private$Catalogs <- catalogStorage(
         CompletedSteps = NULL,
         ReportTask = NULL,
+        ReportArtifacts = NULL,
         Report = NULL
       )
 
@@ -88,7 +89,7 @@ AppManager <- R6::R6Class(
     # USER ACTIONS =================================================================================
 
     CreateReport = function(
-      reportName
+      reportSpec
     ) {
       if (!is.element(
         self$Steps['CASE_BASED_ADJUSTMENTS'],
@@ -105,14 +106,14 @@ AppManager <- R6::R6Class(
         PrintAlert('Starting report task')
 
         private$Catalogs$ReportTask <- Task$new(
-          function(reportName, fileName, filters, adjustedData) {
+          function(reportSpec, fileName, filters, adjustedData) {
             suppressMessages(pkgload::load_all())
-            reportFilePath <- hivEstimatesAccuracy2::GetReportFileNames()[reportName]
-            params <- list(
-              AdjustedData = adjustedData,
-              ReportingDelay = TRUE,
-              Smoothing = TRUE,
-              CD4ConfInt = FALSE
+            reportFilePath <- hivEstimatesAccuracy2::GetReportFileNames()[reportSpec$name]
+            params <- modifyList(
+              reportSpec,
+              list(
+                AdjustedData = adjustedData
+              )
             )
             params <- hivEstimatesAccuracy2::GetMainReportArtifacts(params)
             params <- modifyList(
@@ -127,30 +128,36 @@ AppManager <- R6::R6Class(
             )
             report <- hivEstimatesAccuracy2::RenderReportToHTML(reportFilePath, params)
 
-            return(report)
+            result <- list(
+              Artifacts = params,
+              Report = report
+            )
+
+            return(result)
           },
           args = list(
-            reportName = reportName,
+            reportSpec = reportSpec,
             fileName = private$CaseMgrPriv$FileName,
             filters = private$CaseMgrPriv$Filters,
             adjustedData = private$CaseMgrPriv$AdjustmentResult
           ),
           session = private$Session,
-          successCallback = function(report) {
-            private$Catalogs$Report <- report
+          successCallback = function(result) {
+            private$Catalogs$Report <- result$Report
+            private$Catalogs$ReportArtifacts <- result$Artifacts
             PrintAlert('Running report task finished')
             self$SendMessage(
               'CREATING_REPORT_FINISHED',
               payload = list(
                 ActionStatus = 'SUCCESS',
                 ActionMessage = 'Running report task finished',
-                Report = report
+                Report = result$Report
               )
             )
             self$SetCompletedStep('REPORTS')
           },
           failCallback = function() {
-            PrintAlert('Running adjustment task failed', type = 'danger')
+            PrintAlert('Running report task failed', type = 'danger')
             self$SendMessage(
               'CREATING_REPORT_FINISHED',
               payload = list(
@@ -235,6 +242,10 @@ AppManager <- R6::R6Class(
 
     ReportTask = function() {
       return(private$Catalogs$ReportTask)
+    },
+
+    ReportArtifacts = function() {
+      return(private$Catalogs$ReportArtifacts)
     },
 
     Report = function() {

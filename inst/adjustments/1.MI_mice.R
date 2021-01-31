@@ -112,7 +112,7 @@ list(
         # Define outcomes of joint imputation model
         Y <- dataSet[, ..yColNames]
 
-        # Not used levels must be removed
+        # Unused levels must be removed
         X <- droplevels(X)
         Y <- droplevels(Y)
 

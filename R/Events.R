@@ -2,21 +2,45 @@ CreateDownload <- function(type, format, output, appMgr) {
   if (type == 'ADJUSTED_DATA') {
     timeStamp <- appMgr$CaseMgr$LastAdjustmentResult$TimeStamp
     if (format %in% c('rds')) {
-      downloadData <- appMgr$CaseMgr$LastAdjustmentResult
+      data <- appMgr$CaseMgr$LastAdjustmentResult
     } else {
-      downloadData <- appMgr$CaseMgr$LastAdjustmentResult$Data
+      data <- appMgr$CaseMgr$LastAdjustmentResult$Data
     }
-
     fileNamePrefix <- 'AdjustedData'
     outputControlName <- sprintf('downAdjData%s', toupper(format))
+  } else if (type == 'MAIN_REPORT') {
+    timeStamp <- GetTimeStamp()
+    data <- appMgr$ReportArtifacts
+    fileNamePrefix <- 'AdjustmentsReport'
+    outputControlName <- sprintf('report%s', toupper(format))
   }
 
   output[[outputControlName]] <- downloadHandler(
     filename = function() {
-      sprintf('AdjustedData_%s.%s', timeStamp, format)
+      if (type == 'ADJUSTED_DATE') {
+        sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+      } else {
+        sprintf('%s_%s.%s', fileNamePrefix, timeStamp, switch(
+          format,
+          'html' = 'html',
+          'pdf' = 'pdf',
+          'latex' = 'zip',
+          'word' = 'docx'
+        ))
+      }
+
     },
     content = function(file) {
-      WriteDataFile(downloadData, file)
+      if (type == 'ADJUSTED_DATA') {
+        WriteDataFile(data, file)
+      } else {
+        RenderReportToFile(
+          reportFilePath = GetReportFileNames()['Main Report'],
+          format = sprintf('%s_document', format),
+          params = data,
+          outputFilePath = file
+        )
+      }
     }
   )
 }
@@ -145,7 +169,19 @@ Events <- function(
   })
 
   observeEvent(input$createReportBtn, {
-    appMgr$CreateReport(reportName = 'Main Report')
+    reportSpec <- input$createReportBtn
+    appMgr$CreateReport(reportSpec)
+  })
+
+  observeEvent(input$cancelCreatingReportBtn, {
+    appMgr$CancelReport()
+  })
+
+  observeEvent(appMgr$ReportArtifacts, {
+    CreateDownload('MAIN_REPORT', 'html', output, appMgr)
+    CreateDownload('MAIN_REPORT', 'pdf', output, appMgr)
+    CreateDownload('MAIN_REPORT', 'latex', output, appMgr)
+    CreateDownload('MAIN_REPORT', 'word', output, appMgr)
   })
 
   # observeEvent(input$aggrUploadBtn, {
@@ -280,17 +316,17 @@ Events <- function(
   # })
 
   # observeEvent(appMgr$ReportTask$Status, {
-  #   if (appMgr$ReportTask$Status == "RUNNING") {
-  #     appMgr$SendEventToReact("shinyHandler", list(
-  #       Type = "GENERATING_REPORT_STARTED",
-  #       Status = "SUCCESS",
+  #   if (appMgr$ReportTask$Status == 'RUNNING') {
+  #     appMgr$SendEventToReact('shinyHandler', list(
+  #       Type = 'GENERATING_REPORT_STARTED',
+  #       Status = 'SUCCESS',
   #       Payload = list()
   #     ))
-  #   } else if (appMgr$ReportTask$Status == "STOPPED") {
+  #   } else if (appMgr$ReportTask$Status == 'STOPPED') {
   #     appMgr$Report <- appMgr$ReportTask$Result
-  #     appMgr$SendEventToReact("shinyHandler", list(
-  #       Type = "REPORT_SET",
-  #       Status = "SUCCESS",
+  #     appMgr$SendEventToReact('shinyHandler', list(
+  #       Type = 'REPORT_SET',
+  #       Status = 'SUCCESS',
   #       Payload = list(
   #         Report = appMgr$Report
   #       )

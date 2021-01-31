@@ -1,6 +1,6 @@
 ---
 name: "Main Report"
-author: "HIV Estimates Accuracy tool"
+author: "HIV Platform"
 title: "Adjustments report"
 date: "`r format(Sys.time(), '%d %B %Y, %H:%M:%S')`"
 editor_options:
@@ -32,13 +32,13 @@ output:
     toc: yes
     template: default
     highlight: null
-    citation_package: none
+    citation_package: default
     number_sections: yes
   pdf_document:
     toc: yes
     template: default
     highlight: null
-    citation_package: none
+    citation_package: default
     number_sections: yes
   word_document:
     reference_docx: ./resources/template_ECDC.docx
@@ -65,14 +65,16 @@ params:
 
 IsEmptyString <- hivEstimatesAccuracy2::IsEmptyString
 
-knitr::opts_chunk$set(echo = FALSE,
-                      cache = FALSE,
-                      results = "asis",
-                      message = FALSE,
-                      warning = FALSE,
-                      include = TRUE,
-                      fig.height = 4,
-                      fig.width = 10)
+knitr::opts_chunk$set(
+  echo = FALSE,
+  cache = FALSE,
+  results = "asis",
+  message = FALSE,
+  warning = FALSE,
+  include = TRUE,
+  fig.height = 4,
+  fig.width = 10
+)
 ```
 
 --------------------------------------------------------------------------------

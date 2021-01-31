@@ -52,13 +52,45 @@ ReadDataFile <- function(
   # Run appropriate reading function
   data <- switch(
     fileType,
-    'xls'  = ReadExcelFile(localFileName, fileType, ...),
-    'xlsx' = ReadExcelFile(localFileName, fileType, ...),
+    'xls'  = {
+      dt <- ReadExcelFile(
+        localFileName,
+        fileType,
+        col_types = 'list',
+        guess_max = 0,
+        progress = FALSE,
+        ...
+      )
+      colNames <- colnames(dt)
+      dt[, (colNames) := lapply(.SD, function(col) sapply(col, as.character)), .SDcols = colNames]
+    },
+    'xlsx' = {
+      dt <- ReadExcelFile(
+        localFileName,
+        fileType,
+        col_types = 'list',
+        guess_max = 0,
+        progress = FALSE,
+        ...
+      )
+      colNames <- colnames(dt)
+      dt[, (colNames) := lapply(.SD, function(col) sapply(col, as.character)), .SDcols = colNames]
+    },
     'txt'  = ReadTextFile(localFileName, colClasses = 'character', ...),
     'csv'  = ReadTextFile(localFileName, colClasses = 'character', ...),
     'rds'  = ReadRdsFile(localFileName, ...),
     'Unsupported file extension'
   )
+
+  # Convert all strings to upper case
+  colClasses <- sapply(sapply(data, class), '[[', 1)
+  charColNames <- names(colClasses[colClasses == 'character'])
+  data[, (charColNames) := lapply(.SD, toupper), .SDcols = charColNames]
+
+  # Replace UNKs and BLANKS with NAs
+  for (colName in charColNames) {
+    data[get(colName) %chin% c('UNK', 'NA', ''), (colName) := NA_character_]
+  }
 
   return(data)
 }

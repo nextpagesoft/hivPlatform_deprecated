@@ -68,17 +68,24 @@ list(
       yColNamesAll <- c('Age', 'SqCD4', 'Transmission', 'GroupedRegionOfOrigin')
 
       if (imputeRD) {
-        # Create logit transform of VarX
-        dataSet[, c('LogitVarX', 'LogTweakedMaxPossibleDelay') := {
-          p <- TweakedVarX / TweakedMaxPossibleDelay
-          logitVarX <- log(p / (1 - p))
-          logTweakedMaxPossibleDelay <- log(TweakedMaxPossibleDelay)
-          list(logitVarX, logTweakedMaxPossibleDelay)
-        }]
+        dataSet[, LogTweakedMaxPossibleDelay := log(TweakedMaxPossibleDelay)]
 
         xColNamesAll <- union(xColNamesAll, c('LogTweakedMaxPossibleDelay'))
-        yColNamesAll <- union(yColNamesAll, c('LogitVarX'))
+        yColNamesAll <- union(yColNamesAll, c('VarX'))
       }
+
+      # if (imputeRD) {
+      #   # Create logit transform of VarX
+      #   dataSet[, c('LogitVarX', 'LogTweakedMaxPossibleDelay') := {
+      #     p <- TweakedVarX / TweakedMaxPossibleDelay
+      #     logitVarX <- log(p / (1 - p))
+      #     logTweakedMaxPossibleDelay <- log(TweakedMaxPossibleDelay)
+      #     list(logitVarX, logTweakedMaxPossibleDelay)
+      #   }]
+
+      #   xColNamesAll <- union(xColNamesAll, c('LogTweakedMaxPossibleDelay'))
+      #   yColNamesAll <- union(yColNamesAll, c('LogitVarX'))
+      # }
 
       # Determine which columns to pass to the jomo package
 
@@ -116,7 +123,7 @@ list(
         Y <- dataSet[, ..yColNames]
 
         # Workaround for jomo bug:
-        # Not used levels must be removed
+        # Unused levels must be removed
         X <- droplevels(X)
         Y <- droplevels(Y)
 
@@ -146,7 +153,10 @@ list(
 
       indexColNames <- c('Imputation', 'Id')
       impColNames <- union(indexColNames, yColNames)
-      dataSetColNames <- setdiff(colnames(dataSet), union(yColNames, 'LogTweakedMaxPossibleDelay'))
+      dataSetColNames <- setdiff(
+        colnames(dataSet),
+        union(yColNames, c('Imputation', 'LogTweakedMaxPossibleDelay'))
+      )
 
       mi <- cbind(imp[, ..impColNames], dataSet[, ..dataSetColNames])
 
@@ -160,11 +170,11 @@ list(
 
       setcolorder(mi, union(indexColNames, dataSetColNames))
 
-      ConvertDataTableColumns(mi, c(Imputation = "integer"))
+      ConvertDataTableColumns(mi, c(Imputation = function(x) as.integer(as.character(x))))
 
       mi[, FirstCD4Count := SqCD4^2]
 
-      return(list(Table = mi, Artifacts = artifacts))
+      return(list(Data = mi, Artifacts = artifacts))
     }
 
     # 1. Save original order for later
@@ -174,8 +184,7 @@ list(
     inputData[, DY := YearOfHIVDiagnosis - min(YearOfHIVDiagnosis, na.rm = TRUE)]
 
     # 3. Split by gender to data sets
-    dataSets <- inputData[Gender != '']
-    dataSets <- split(dataSets, by = c('Gender'))
+    dataSets <- split(inputData, by = c('Gender'))
 
     # 4. Execute the worker function per data set
     outputData <- lapply(
@@ -190,11 +199,11 @@ list(
 
     # 5. Combine all data sets
     names(outputData) <- names(dataSets)
-    table <- rbindlist(lapply(outputData, '[[', 'Table'))
+    data <- rbindlist(lapply(outputData, '[[', 'Data'))
     artifacts <- lapply(outputData, '[[', 'Artifacts')
 
     # 6. Restore original order per Imputation
-    setorder(table, Imputation, OrigSort)
+    setorder(data, Imputation, OrigSort)
 
     # 7. Clean up
     data[, ':='(
@@ -205,7 +214,7 @@ list(
 
     return(
       list(
-        Table = table,
+        Data = data,
         Artifacts = artifacts
       )
     )

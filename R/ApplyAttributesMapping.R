@@ -52,7 +52,7 @@ ApplyAttributesMapping <- function(
     includeFileName = FALSE
   )
 
-  ConvertDataTableColumns(outputData, sapply(columnSpecs, '[[', 'type'))
+  ConvertDataTableColumns(object = outputData, columnDefs = sapply(columnSpecs, '[[', 'type'))
 
   # Add Imputation column
   outputData[, Imputation := 0L]

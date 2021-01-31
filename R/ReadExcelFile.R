@@ -15,8 +15,11 @@
 #' }
 #'
 #' @export
-ReadExcelFile <- function(fileName, fileType, ...)
-{
+ReadExcelFile <- function(
+  fileName,
+  fileType,
+  ...
+) {
   stopifnot(!missing(fileName))
 
   if (missing(fileType)) {
@@ -27,7 +30,7 @@ ReadExcelFile <- function(fileName, fileType, ...)
     fileType,
     'xls'  = data.table::setDT(readxl::read_xls(path = fileName, ...)),
     'xlsx' = data.table::setDT(readxl::read_xlsx(path = fileName, ...)),
-    {'Unsupported file extension'}
+    'Unsupported file extension'
   )
 
   return(data)

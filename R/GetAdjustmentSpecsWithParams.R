@@ -21,7 +21,7 @@ GetAdjustmentSpecsWithParams <- function(
   rdAdjustment <- NULL
   if (params$RDAdjustType == 'withoutTrend') {
     rdAdjustment <- GetAdjustmentSpecs('Reporting Delays')
-  } else if (params$MIAdjustType == 'withTrend') {
+  } else if (params$RDAdjustType == 'withTrend') {
     rdAdjustment <- GetAdjustmentSpecs('Reporting Delays with trend')
   }
 

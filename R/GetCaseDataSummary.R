@@ -1,8 +1,21 @@
 GetCaseDataSummary <- function(
   data
 ) {
+  genders <- levels(data$Gender)
+  genderLabels <- list(
+    M = 'Male',
+    F = 'Female',
+    O = 'Other'
+  )
+
   # Diagnosis year plot
   diagYearCounts <- data[, .(Count = .N), keyby = .(Gender, YearOfHIVDiagnosis)]
+  diagYearCounts <- dcast(diagYearCounts, 'YearOfHIVDiagnosis ~ Gender', value.var = 'Count')
+  missingCols <- genders[!genders %in% colnames(diagYearCounts)]
+  if (length(missingCols) > 0) {
+    diagYearCounts[, (missingCols) := 0]
+  }
+  diagYearCounts[, (genders) := lapply(.SD, na.zero), .SDcols = genders]
   diagYearCategories <- sort(unique(diagYearCounts$YearOfHIVDiagnosis))
   diagYearPlotData <- list(
     filter = list(
@@ -13,20 +26,22 @@ GetCaseDataSummary <- function(
       applyInAdjustments = FALSE
     ),
     chartCategories = diagYearCategories,
-    chartData = list(
+    chartData = lapply(genders, function(gender) {
       list(
-        name = 'Female',
-        data = diagYearCounts[Gender == 'F', Count]
-      ),
-      list(
-        name = 'Male',
-        data = diagYearCounts[Gender == 'M', Count]
+        name = genderLabels[[gender]],
+        data = diagYearCounts[[gender]]
       )
-    )
+    })
   )
 
   # Notification quarter plot
   notifQuarterCounts <- data[, .(Count = .N), keyby = .(Gender, NotificationTime)]
+  notifQuarterCounts <- dcast(notifQuarterCounts, 'NotificationTime ~ Gender', value.var = 'Count')
+  missingCols <- genders[!genders %in% colnames(notifQuarterCounts)]
+  if (length(missingCols) > 0) {
+    notifQuarterCounts[, (missingCols) := 0]
+  }
+  notifQuarterCounts[, (genders) := lapply(.SD, na.zero), .SDcols = genders]
   notifQuarterCategories <- sort(unique(notifQuarterCounts$NotificationTime))
   notifQuarterPlotData <- list(
     filter = list(
@@ -37,16 +52,12 @@ GetCaseDataSummary <- function(
       applyInAdjustments = FALSE
     ),
     chartCategories = notifQuarterCategories,
-    chartData = list(
+    chartData = lapply(genders, function(gender) {
       list(
-        name = 'Female',
-        data = notifQuarterCounts[Gender == 'F', Count]
-      ),
-      list(
-        name = 'Male',
-        data = notifQuarterCounts[Gender == 'M', Count]
+        name = genderLabels[[gender]],
+        data = notifQuarterCounts[[gender]]
       )
-    )
+    })
   )
 
   summary <- list(

@@ -142,7 +142,7 @@ CaseDataManager <- R6::R6Class(
       },
       error = function(e) {
         print(e)
-        msg <<- 'Applying attributes mapping failed'
+        msg <<- sprintf('Applying attributes mapping failed: %s', e$message)
         status <<- 'FAIL'
       })
 

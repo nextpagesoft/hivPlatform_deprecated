@@ -62,10 +62,11 @@ AppManager <- R6::R6Class(
       'CASE_BASED_ORIGIN_GROUPING' = 4L,
       'CASE_BASED_SUMMARY' = 5L,
       'CASE_BASED_ADJUSTMENTS' = 6L,
-      'MODELLING' = 7L,
-      'BOOTSTRAP' = 8L,
-      'REPORTS' = 9L,
-      'OUTPUTS' = 10L
+      'BOOTSTRAP' = 7L,
+      'REPORTS' = 8L,
+      'OUTPUTS' = 9L,
+      'AGGR_READ' = 10L,
+      'MODELLING' = 11L
     ),
 
     SetCompletedStep = function(step) {
@@ -84,6 +85,10 @@ AppManager <- R6::R6Class(
           )
         )
       }
+    },
+
+    SaveState = function() {
+      PrintAlert('Saving state to file')
     },
 
     # USER ACTIONS =================================================================================

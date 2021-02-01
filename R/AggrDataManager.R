@@ -24,8 +24,7 @@ AggrDataManager <- R6::R6Class(
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
         FileName = NULL,
-        Data = NULL,
-        LastStep = 0L
+        Data = NULL
       )
     },
 
@@ -39,29 +38,18 @@ AggrDataManager <- R6::R6Class(
     ReadData = function(
       fileName
     ) {
-      if (private$Catalogs$LastStep < 0) {
+      if (!is.element(private$AppMgr$Steps['SESSION_INITIALIZED'], private$AppMgr$CompletedSteps)) {
         PrintAlert(
-          'AggrDataManager is not initialized properly before reading data',
+          'AppManager is not initialized properly before reading data',
           type = 'danger'
         )
         return(invisible(self))
       }
 
       status <- 'SUCCESS'
+      msg <- 'Data read correctly'
       tryCatch({
         data <- hivModelling::ReadInputData(fileName)
-      },
-      error = function(e) {
-        status <- 'FAIL'
-      })
-
-      if (status == 'SUCCESS') {
-        private$Catalogs$FileName <- fileName
-        private$Catalogs$Data <- data
-        private$Catalogs$LastStep <- 1L
-        PrintAlert('Data file {.file {fileName}} loaded')
-        private$Reinitialize('ReadData')
-
         dataNames <- names(data)
         dataFiles <- lapply(
           dataNames,
@@ -74,16 +62,34 @@ AggrDataManager <- R6::R6Class(
             )
           }
         )
+        populationNames <- names(data[[1]])[-1]
+      },
+      error = function(e) {
+        status <<- 'FAIL'
+        msg <<-
+          'There was a difficulty encountered when reading the data file. It has not been loaded.'
+      })
+
+      if (status == 'SUCCESS') {
+        private$Catalogs$FileName <- fileName
+        private$Catalogs$Data <- data
+        private$AppMgr$SetCompletedStep('AGGR_READ')
+        PrintAlert('Data file {.file {fileName}} loaded')
         payload <- list(
+          ActionStatus = status,
+          ActionMessage = msg,
           DataFiles = dataFiles,
           PopulationNames = names(data[[1]])[-1]
         )
       } else {
         PrintAlert('Loading data file {.file {fileName}} failed', type = 'danger')
-        payload <- list()
+        payload <- list(
+          ActionStatus = status,
+          ActionMessage = msg
+        )
       }
 
-      private$SendMessage('AGGR_DATA_READ', status, payload)
+      private$SendMessage('AGGR_DATA_READ', payload)
 
       return(invisible(self))
     }
@@ -103,10 +109,6 @@ AggrDataManager <- R6::R6Class(
       if (is.function(private$AppMgr$SendMessage)) {
         private$AppMgr$SendMessage(...)
       }
-    },
-
-    Reinitialize = function(step) {
-      return(invisible(self))
     }
   ),
 
@@ -117,10 +119,6 @@ AggrDataManager <- R6::R6Class(
 
     Data = function() {
       return(private$Catalogs$Data)
-    },
-
-    LastStep = function() {
-      return(private$Catalogs$LastStep)
     }
   )
 )

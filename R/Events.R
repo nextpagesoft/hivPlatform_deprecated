@@ -51,6 +51,11 @@ Events <- function(
   session,
   appMgr
 ) {
+
+  observeEvent(input$saveStateBtn, {
+    appMgr$SaveState()
+  })
+
   # Case-based data upload event
   observeEvent(input$caseUploadBtn, {
     fileInfo <- input$caseUploadBtn
@@ -68,7 +73,24 @@ Events <- function(
     appMgr$CaseMgr$ReadData(fileInfo$datapath)
   })
 
+  observeEvent(input$aggrUploadBtn, {
+    fileInfo <- input$aggrUploadBtn
+    appMgr$SendMessage(
+      'AGGR_DATA_UPLOADED',
+      list(
+        ActionStatus = 'SUCCESS',
+        ActionMessage = 'Data has been uploaded successfully',
+        FileName = fileInfo$name[1],
+        FileSize = fileInfo$size[1],
+        FileType = fileInfo$type[1],
+        FilePath = fileInfo$datapath[1]
+      )
+    )
+    appMgr$AggrMgr$ReadData(fileInfo$datapath)
+  })
+
   observeEvent(input$attrMapping, {
+    # print(input$attrMapping)
     appMgr$CaseMgr$ApplyAttributesMapping(input$attrMapping)
   })
 
@@ -183,22 +205,6 @@ Events <- function(
     CreateDownload('MAIN_REPORT', 'latex', output, appMgr)
     CreateDownload('MAIN_REPORT', 'word', output, appMgr)
   })
-
-  # observeEvent(input$aggrUploadBtn, {
-  #   fileInfo <- input$aggrUploadBtn
-  #   appMgr$SendMessage(
-  #     'AGGR_DATA_UPLOADED',
-  #     'SUCCESS',
-  #     list(
-  #       FileName = fileInfo$name[1],
-  #       FileSize = fileInfo$size[1],
-  #       FileType = fileInfo$type[1],
-  #       FilePath = fileInfo$datapath[1]
-  #     )
-  #   )
-  #   appMgr$AggrMgr$ReadData(fileInfo$datapath)
-  # })
-
 
   # observeEvent(appMgr$FinalAdjustedCaseBasedData$Table, {
   #   dt <- appMgr$FinalAdjustedCaseBasedData$Table

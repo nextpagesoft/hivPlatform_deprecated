@@ -76,7 +76,6 @@ CaseDataManager <- R6::R6Class(
         private$Catalogs$OriginalData <- originalData
         private$Catalogs$AttrMapping <- attrMapping
         private$Catalogs$AttrMappingStatus <- attrMappingStatus
-        private$Catalogs$LastStep <- 1L
         private$InvalidateAfterStep('CASE_BASED_READ')
         PrintAlert('Data file {.file {fileName}} loaded')
         payload <- list(
@@ -142,6 +141,7 @@ CaseDataManager <- R6::R6Class(
         }
       },
       error = function(e) {
+        print(e)
         msg <<- 'Applying attributes mapping failed'
         status <<- 'FAIL'
       })
@@ -153,7 +153,6 @@ CaseDataManager <- R6::R6Class(
         private$Catalogs$PreProcessArtifacts <- preProcessArtifacts
         private$Catalogs$PreProcessedData <- data
         private$Catalogs$PreProcessedDataStatus <- dataStatus
-        private$Catalogs$LastStep <- 2L
         private$InvalidateAfterStep('CASE_BASED_ATTR_MAPPING')
         PrintAlert('Attribute mapping has been applied')
         payload <- list(
@@ -211,7 +210,6 @@ CaseDataManager <- R6::R6Class(
         private$Catalogs$OriginGrouping <- originGrouping
         private$Catalogs$PreProcessedData <- preProcessedData
         private$Catalogs$Summary <- summary
-        private$Catalogs$LastStep <- 3L
         private$InvalidateAfterStep('CASE_BASED_ORIGIN_GROUPING')
         PrintAlert('Origin grouping {.val {originGroupingType}} has been applied')
       } else {
@@ -304,7 +302,6 @@ CaseDataManager <- R6::R6Class(
             successCallback = function(result) {
               private$Catalogs$AdjustmentResult <- result
               private$Catalogs$AdjustedData <- copy(self$LastAdjustmentResult$Data)
-              private$Catalogs$LastStep <- 4L
               private$InvalidateAfterStep('CASE_BASED_ADJUSTMENTS')
               PrintAlert('Running adjustment task finished')
               private$SendMessage(
@@ -518,10 +515,6 @@ CaseDataManager <- R6::R6Class(
         data <- private$Catalogs$PreProcessedData
       }
       return(data)
-    },
-
-    LastStep = function() {
-      return(private$Catalogs$LastStep)
     }
   )
 )

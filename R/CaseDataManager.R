@@ -121,6 +121,7 @@ CaseDataManager <- R6::R6Class(
           attrMapping <- GetPreliminaryAttributesMapping(originalData)
         }
         attrMappingStatus <- GetAttrMappingStatus(attrMapping)
+        print(attrMapping)
 
         if (attrMappingStatus$Valid) {
           data <- ApplyAttributesMapping(originalData, attrMapping)

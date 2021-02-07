@@ -121,7 +121,6 @@ CaseDataManager <- R6::R6Class(
           attrMapping <- GetPreliminaryAttributesMapping(originalData)
         }
         attrMappingStatus <- GetAttrMappingStatus(attrMapping)
-        print(attrMapping)
 
         if (attrMappingStatus$Valid) {
           data <- ApplyAttributesMapping(originalData, attrMapping)
@@ -142,7 +141,6 @@ CaseDataManager <- R6::R6Class(
         }
       },
       error = function(e) {
-        print(e)
         msg <<- sprintf('Applying attributes mapping failed: %s', e$message)
         status <<- 'FAIL'
       })
@@ -460,8 +458,7 @@ CaseDataManager <- R6::R6Class(
     },
 
     SummaryJSON = function() {
-      summaryJSON <- jsonlite:::asJSON(private$Catalogs$Summary, keep_vec_names = TRUE)
-      return(summaryJSON)
+      return(jsonlite::toJSON(private$Catalogs$Summary, keep_vec_names = TRUE))
     },
 
     Filters = function() {

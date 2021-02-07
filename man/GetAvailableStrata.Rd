@@ -6,13 +6,14 @@
 \usage{
 GetAvailableStrata(
   dt,
-  colNames = c("Gender", "Transmission", "GroupedRegionOfOrigin", "PlaceOfResidence")
+  variables = c(Gender = "G", Transmission = "T", GroupedRegionOfOrigin = "O",
+    PlaceOfResidence = "R")
 )
 }
 \arguments{
 \item{dt}{dt}
 
-\item{colNames}{colNames}
+\item{variables}{variables}
 }
 \value{
 list
@@ -26,6 +27,6 @@ dt <- data.table::data.table(
   Gender = c('F', 'F', 'M'),
   Transmission = c('IDU', 'IDU', 'MSM')
 )
-GetAvailableStrata(dt, colNames = c('Gender', 'Transmission'))
+GetAvailableStrata(dt, variables = c('Gender' = 'G', 'Transmission' = 'T'))
 
 }

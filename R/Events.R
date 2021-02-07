@@ -206,6 +206,25 @@ Events <- function(
     CreateDownload('MAIN_REPORT', 'word', output, appMgr)
   })
 
+  observeEvent(appMgr$CaseMgr$Data, {
+    result <- GetAvailableStrata(appMgr$CaseMgr$Data)
+    variables <- lapply(names(result$Variables), function(varName) {
+      list(
+        Name = varName,
+        Code = unname(result$Variables[[varName]])
+      )
+    })
+
+    appMgr$SendMessage(
+      'AVAILABLE_STRATA_SET',
+      payload = list(
+        ActionStatus = 'SUCCESS',
+        AvailableVariables = variables,
+        AvailableStrata = jsonlite::toJSON(result$Strata)
+      )
+    )
+  })
+
   # observeEvent(appMgr$FinalAdjustedCaseBasedData$Table, {
   #   dt <- appMgr$FinalAdjustedCaseBasedData$Table
   #   if (!is.null(dt)) {

@@ -92,7 +92,7 @@ cat(
       sprintf(
         "Filter on diagnosis year applied: [%d, %d]",
         params$Artifacts$Filters$DiagYear$MinYear,
-        params$Artifacts$Filters$DiagYear$MaxYear,
+        params$Artifacts$Filters$DiagYear$MaxYear
       ),
       "No filter on diagnosis year applied."
     )

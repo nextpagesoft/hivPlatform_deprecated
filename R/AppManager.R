@@ -185,7 +185,7 @@ AppManager <- R6::R6Class(
           'CREATING_REPORT_STARTED',
           payload = list(
             ActionStatus = 'FAIL',
-            ActionMessage = 'Running report task failed'
+            ActionMessage = 'Starting report task failed'
           )
         )
         print(e)

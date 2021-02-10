@@ -104,19 +104,19 @@ list(
 
     # Filter
     compData <- compData[!is.na(VarX)]
-    compData[is.na(DiagnosisTime), DiagnosisTime := DiagnosisYear + 0.25]
+    compData[is.na(DiagnosisTime), DiagnosisTime := DiagnosisYear + 0.125]
     compData[is.na(NotificationTime), NotificationTime := DiagnosisTime + VarX / 4]
 
     compData <- compData[
       VarX >= 0 &
-        DiagnosisTime >= (startYear + 0.25) &
+        DiagnosisTime >= (startYear + 0.125) &
         NotificationTime <= endQrt
     ]
 
     compData[, ':='(
       VarT = 4 * (pmin.int(MaxNotificationTime, endQrt) - DiagnosisTime) + 1,
       Tf = 4 * (pmin.int(MaxNotificationTime, endQrt) -
-            pmax.int(min(DiagnosisTime), startYear + 0.25)) + 1,
+            pmax.int(min(DiagnosisTime), startYear + 0.125)) + 1,
       ReportingDelay = 1L
     )]
     compData[, ':='(

@@ -51,17 +51,18 @@ AggrDataManager <- R6::R6Class(
       tryCatch({
         data <- hivModelling::ReadInputData(fileName)
         dataNames <- names(data)
-        dataFiles <- lapply(
-          dataNames,
-          function(dataName) {
-            dt <- data[[dataName]]
-            list(
-              name = dataName,
-              use = TRUE,
-              years = c(min(dt$Year), max(dt$Year))
-            )
-          }
-        )
+        dataTypesGroupings <- c('^Dead$', '^AIDS$', '^(HIV|HIVAIDS)$', '^HIV_CD4_[1-4]{1}$')
+        dataFiles <- lapply(dataTypesGroupings, function(grouping) {
+          names <- grep(grouping, dataNames, value = TRUE)
+          years <- lapply(data[names], '[[', 'Year')
+          minYear <- min(sapply(years, min))
+          maxYear <- max(sapply(years, max))
+          list(
+            name = paste(names, collapse = ', '),
+            use = TRUE,
+            years = c(minYear, maxYear)
+          )
+        })
         populationNames <- names(data[[1]])[-1]
       },
       error = function(e) {

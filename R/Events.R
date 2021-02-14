@@ -90,7 +90,6 @@ Events <- function(
   })
 
   observeEvent(input$attrMapping, {
-    # print(input$attrMapping)
     appMgr$CaseMgr$ApplyAttributesMapping(input$attrMapping)
   })
 
@@ -225,137 +224,46 @@ Events <- function(
     )
   })
 
-  # observeEvent(appMgr$FinalAdjustedCaseBasedData$Table, {
-  #   dt <- appMgr$FinalAdjustedCaseBasedData$Table
-  #   if (!is.null(dt)) {
-  #     availableStrata <- GetAvailableStrata(appMgr$FinalAdjustedCaseBasedData$Table)
-  #   } else {
-  #     availableStrata <- NULL
-  #   }
+  observeEvent(input$xmlModel, {
+    appMgr$HIVModelMgr$SetParameters(input$xmlModel)
+  })
 
-  #   appMgr$SendEventToReact('shinyHandler', list(
-  #     Type = 'AVAILABLE_STRATA_SET',
-  #     Status = 'SUCCESS',
-  #     Payload = list(
-  #       AvailableStrata = availableStrata
-  #     )
-  #   ))
-  # }, ignoreNULL = FALSE)
+  observeEvent(input$runModelBtn, {
+    runSettings <- input$runModelBtn
+    params <- runSettings$Params
+    popCombination <- runSettings$PopCombination
+    aggrDataSelection <- runSettings$AggrDataSelection
+    appMgr$HIVModelMgr$RunMainFit(
+      settings = list(Verbose = TRUE),
+      parameters = params,
+      popCombination = popCombination,
+      aggrDataSelection = aggrDataSelection
+    )
+  })
 
-  # observeEvent(input$xmlModel, {
-  #   appMgr$HIVModelParameters <- input$xmlModel
-  # })
+  observeEvent(input$cancelModelBtn, {
+    appMgr$HIVModelMgr$CancelMainFit()
+  })
 
-  # observeEvent(appMgr$HIVModelParameters, {
-  #   appMgr$SendEventToReact('shinyHandler', list(
-  #     Type = 'MODELS_PARAMS_SET',
-  #     Status = 'SUCCESS',
-  #     Payload = list(
-  #       Params = appMgr$HIVModelParameters
-  #     )
-  #   ))
-  # })
+  observeEvent(appMgr$HIVModelMgr$MainFitTask$HTMLRunLog, {
+    appMgr$SendMessage(
+      'MODELS_RUN_LOG_SET',
+      payload = list(
+        ActionStatus = 'SUCCESS',
+        RunLog = appMgr$HIVModelMgr$MainFitTask$HTMLRunLog
+      )
+    )
+  })
 
-  # observeEvent(input$runModelBtn, {
-  #   params <- input$runModelBtn
-  #   print(params)
-  #   appMgr$FitHIVModel(
-  #     settings = list(Verbose = TRUE),
-  #     parameters = params
-  #   )
-  # })
+  observeEvent(input$runBootstrapBtn, {
+    params <- input$runBootstrapBtn
+    appMgr$HIVModelMgr$RunBootstrapFit(
+      bsCount = params$count,
+      bsType = params$type
+    )
+  })
 
-  # observeEvent(appMgr$HIVModelTask$HTMLRunLog, {
-  #   appMgr$SendEventToReact('shinyHandler', list(
-  #     Type = 'MODELS_RUN_LOG_SET',
-  #     Status = 'SUCCESS',
-  #     Payload = list(
-  #       RunLog = appMgr$HIVModelTask$HTMLRunLog
-  #     )
-  #   ))
-  # })
-
-  # observeEvent(appMgr$HIVModelTask$Status, {
-  #   if (appMgr$HIVModelTask$Status == 'RUNNING') {
-  #     appMgr$SendEventToReact('shinyHandler', list(
-  #       Type = 'MODELS_RUN_STARTED',
-  #       Status = 'SUCCESS',
-  #       Payload = list()
-  #     ))
-  #   } else if (appMgr$HIVModelTask$Status == 'STOPPED') {
-  #     appMgr$HIVModelResults <- appMgr$HIVModelTask$Result
-  #     appMgr$SendEventToReact('shinyHandler', list(
-  #       Type = 'MODELS_RUN_FINISHED',
-  #       Status = 'SUCCESS',
-  #       Payload = list()
-  #     ))
-  #   }
-  # })
-
-  # observeEvent(input$cancelModelBtn, {
-  #   appMgr$CancelHIVModelFit()
-  # })
-
-  # observeEvent(input$runBootstrapBtn, {
-  #   params <- input$runBootstrapBtn
-  #   print(params)
-  #   appMgr$RunBootstrap(
-  #     bsCount = params$count,
-  #     type = params$type
-  #   )
-  # })
-
-  # observeEvent(appMgr$BootstrapTask$HTMLRunLog, {
-  #   appMgr$SendEventToReact('shinyHandler', list(
-  #     Type = 'BOOTSTRAP_RUN_LOG_SET',
-  #     Status = 'SUCCESS',
-  #     Payload = list(
-  #       RunLog = appMgr$BootstrapTask$HTMLRunLog
-  #     )
-  #   ))
-  # })
-
-  # observeEvent(appMgr$BootstrapTask$Status, {
-  #   if (appMgr$BootstrapTask$Status == 'RUNNING') {
-  #     appMgr$SendEventToReact('shinyHandler', list(
-  #       Type = 'BOOTSTRAP_RUN_STARTED',
-  #       Status = 'SUCCESS',
-  #       Payload = list()
-  #     ))
-  #   } else if (appMgr$BootstrapTask$Status == 'STOPPED') {
-  #     appMgr$HIVBootstrapModelResults <- appMgr$BootstrapTask$Result
-  #     appMgr$SendEventToReact('shinyHandler', list(
-  #       Type = 'BOOTSTRAP_RUN_FINISHED',
-  #       Status = 'SUCCESS',
-  #       Payload = list()
-  #     ))
-  #   }
-  # })
-
-  # observeEvent(input$cancelBootstrapBtn, {
-  #   appMgr$CancelBootstrapTask()
-  # })
-
-  # observeEvent(input$generateReportBtn, {
-  #   appMgr$GenerateReport()
-  # })
-
-  # observeEvent(appMgr$ReportTask$Status, {
-  #   if (appMgr$ReportTask$Status == 'RUNNING') {
-  #     appMgr$SendEventToReact('shinyHandler', list(
-  #       Type = 'GENERATING_REPORT_STARTED',
-  #       Status = 'SUCCESS',
-  #       Payload = list()
-  #     ))
-  #   } else if (appMgr$ReportTask$Status == 'STOPPED') {
-  #     appMgr$Report <- appMgr$ReportTask$Result
-  #     appMgr$SendEventToReact('shinyHandler', list(
-  #       Type = 'REPORT_SET',
-  #       Status = 'SUCCESS',
-  #       Payload = list(
-  #         Report = appMgr$Report
-  #       )
-  #     ))
-  #   }
-  # })
+  observeEvent(input$cancelBootstrapBtn, {
+    appMgr$HIVModelMgr$CancelBootstrapFit()
+  })
 }

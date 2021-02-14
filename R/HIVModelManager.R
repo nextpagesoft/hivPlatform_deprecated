@@ -19,18 +19,18 @@ HIVModelManager <- R6::R6Class(
       session = NULL,
       appMgr = NULL
     ) {
-      private$Session <- session
       private$AppMgr <- appMgr
+      private$Session <- session
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
+        Parameters = NULL,
         PopCombination = NULL,
         AggrDataSelection = NULL,
         MainFitTask = NULL,
         MainFitResult = NULL,
         BootstrapFitTask = NULL,
         BootstrapFitResult = NULL,
-        BootstrapFitStats = NULL,
-        LastStep = 0L
+        BootstrapFitStats = NULL
       )
     },
 
@@ -40,15 +40,51 @@ HIVModelManager <- R6::R6Class(
 
     # USER ACTIONS =================================================================================
 
+    SetParameters = function(
+      xmlModel
+    ) {
+      status <- 'SUCCESS'
+      msg <- 'Parameters read correctly'
+      tryCatch({
+        params <- ParseXMLModel(xmlModel)
+      }, error = function(e) {
+        status <<- 'FAIL'
+        msg <<-
+          paste(
+            'There was a difficulty encountered when reading the parameters file.',
+            'They have not been loaded.'
+          )
+      })
+
+      if (status == 'SUCCESS') {
+        private$Catalogs$Parameters <- params
+        payload <- list(
+          ActionStatus = status,
+          ActionMessage = msg,
+          Params = params
+        )
+      } else {
+        payload <- list(
+          ActionStatus = status,
+          ActionMessage = msg
+        )
+      }
+
+      private$SendMessage('MODELS_PARAMS_SET', payload)
+    },
+
     RunMainFit = function(
       settings = list(),
       parameters = list(),
       popCombination = NULL,
       aggrDataSelection = NULL
     ) {
-      if (private$Catalogs$LastStep < 0) {
+      if (!any(is.element(
+        private$AppMgr$Steps[c('CASE_BASED_READ', 'AGGR_READ')],
+        private$AppMgr$CompletedSteps
+      ))) {
         PrintAlert(
-          'HIVModelManager is not initialized properly before combining data',
+          'Data must be read before running main fit of the HIV model',
           type = 'danger'
         )
         return(invisible(self))
@@ -63,7 +99,7 @@ HIVModelManager <- R6::R6Class(
 
         private$Catalogs$MainFitTask <- Task$new(
           function(dataSets, settings, parameters) {
-            options(width = 100)
+            options(width = 120)
 
             result <- list()
             for (imp in names(dataSets)) {
@@ -94,24 +130,56 @@ HIVModelManager <- R6::R6Class(
             parameters = parameters
           ),
           session = private$Session,
+          progressCallback = function(runLog) {
+            private$SendMessage(
+              'MODELS_RUN_LOG_SET',
+              payload = list(
+                ActionStatus = 'SUCCESS',
+                RunLog = runLog
+              )
+            )
+          },
           successCallback = function(result) {
             private$Catalogs$PopCombination <- popCombination
             private$Catalogs$AggrDataSelection <- aggrDataSelection
             private$Catalogs$MainFitResult <- result
-            private$Catalogs$LastStep <- 1L
-            private$Reinitialize('RunMainFit')
+            private$InvalidateAfterStep('MODELLING')
             PrintAlert('Running HIV Model main fit task finished')
-            private$SendMessage('MODELS_RUN_FINISHED', 'SUCCESS')
+            private$SendMessage(
+              'MODELS_RUN_FINISHED',
+              payload = list(
+                ActionStatus = 'SUCCESS',
+                ActionMessage = 'Running HIV Model main fit task finished'
+              )
+            )
           },
           failCallback = function() {
             PrintAlert('Running HIV Model main fit task failed', type = 'danger')
-            private$SendMessage('MODELS_RUN_FINISHED', 'FAIL')
+            private$SendMessage(
+              'MODELS_RUN_FINISHED',
+              payload = list(
+                ActionStatus = 'FAIL',
+                ActionMessage = 'Running HIV Model main fit task failed'
+              )
+            )
           }
         )
-        private$SendMessage('MODELS_RUN_STARTED', 'SUCCESS')
+        private$SendMessage(
+          'MODELS_RUN_STARTED',
+          payload = list(
+            ActionStatus = 'SUCCESS',
+            ActionMessage = 'Running HIV Model main fit task started'
+          )
+        )
       },
       error = function(e) {
-        private$SendMessage('MODELS_RUN_STARTED', 'FAIL')
+        private$SendMessage(
+          'MODELS_RUN_STARTED',
+          payload = list(
+            ActionStatus = 'FAIL',
+            ActionMessage = 'Running HIV Model main fit task failed'
+          )
+        )
         print(e)
       })
 
@@ -119,7 +187,17 @@ HIVModelManager <- R6::R6Class(
     },
 
     CancelMainFit = function() {
-      private$Catalogs$MainFitTask$Stop()
+      if (!is.null(private$Catalogs$MainFitTask)) {
+        private$Catalogs$MainFitTask$Stop()
+        private$SendMessage(
+          'MODELS_RUN_CANCELLED',
+          payload = list(
+            ActionStatus = 'SUCCESS',
+            ActionMessage = 'Running HIV Model main fit task cancelled'
+          )
+        )
+      }
+
       return(invisible(self))
     },
 
@@ -128,8 +206,14 @@ HIVModelManager <- R6::R6Class(
       bsType = 'PARAMETRIC',
       maxRunTimeFactor = 3
     ) {
-      if (private$Catalogs$LastStep < 1) {
-        PrintAlert('Main fit must be performed before running bootstrap', type = 'danger')
+      if (!is.element(
+        private$AppMgr$Steps['MODELLING'],
+        private$AppMgr$CompletedSteps
+      )) {
+        PrintAlert(
+          'Main fit must be performed before running bootstrap',
+          type = 'danger'
+        )
         return(invisible(self))
       }
 
@@ -152,7 +236,7 @@ HIVModelManager <- R6::R6Class(
             aggrDataSelection
           ) {
             suppressMessages(pkgload::load_all())
-            options(width = 100)
+            options(width = 120)
             mainCount <- length(mainFitResult)
             fits <- list()
             i <- 0
@@ -271,20 +355,43 @@ HIVModelManager <- R6::R6Class(
           successCallback = function(result) {
             private$Catalogs$BootstrapFitResult <- result$Fits
             private$Catalogs$BootstrapFitStats <- result$Stats
-            private$Catalogs$LastStep <- 2L
-            private$Reinitialize('RunBootstrapFit')
+            private$InvalidateAfterStep('BOOTSTRAP')
             PrintAlert('Running HIV Model bootstrap fit task finished')
-            private$SendMessage('BOOTSTRAP_RUN_FINISHED', 'SUCCESS')
+            private$SendMessage(
+              'BOOTSTRAP_RUN_FINISHED',
+              payload = list(
+                ActionStatus = 'SUCCESS',
+                ActionMessage = 'Running HIV Model bootstrap fit task finished'
+              )
+            )
           },
           failCallback = function() {
             PrintAlert('Running HIV Model bootstrap fit task failed', type = 'danger')
-            private$SendMessage('BOOTSTRAP_RUN_FINISHED', 'FAIL')
+            private$SendMessage(
+              'BOOTSTRAP_RUN_FINISHED',
+              payload = list(
+                ActionStatus = 'FAIL',
+                ActionMessage = 'Running HIV Model bootstrap fit task failed'
+              )
+            )
           }
         )
-        private$SendMessage('BOOTSTRAP_RUN_STARTED', 'SUCCESS')
+        private$SendMessage(
+          'BOOTSTRAP_RUN_STARTED',
+          payload = list(
+            ActionStatus = 'SUCCESS',
+            ActionMessage = 'Running HIV Model bootstrap fit task started'
+          )
+        )
       },
       error = function(e) {
-        private$SendMessage('BOOTSTRAP_RUN_STARTED', 'FAIL')
+        private$SendMessage(
+          'BOOTSTRAP_RUN_STARTED',
+          payload = list(
+            ActionStatus = 'FAIL',
+            ActionMessage = 'Running HIV Model bootstrap fit task failed'
+          )
+        )
         print(e)
       })
 
@@ -292,7 +399,15 @@ HIVModelManager <- R6::R6Class(
     },
 
     CancelBootstrapFit = function() {
-      private$Catalogs$BootstrapFitTask$Stop()
+      if (!is.null(private$Catalogs$BootstrapFitTask)) {
+        private$SendMessage(
+          'BOOTSTRAP_RUN_CANCELLED',
+          payload = list(
+            ActionStatus = 'SUCCESS',
+            ActionMessage = 'Running HIV Model bootstrap fit task cancelled'
+          )
+        )
+      }
       return(invisible(self))
     }
   ),
@@ -313,24 +428,24 @@ HIVModelManager <- R6::R6Class(
       }
     },
 
-    Reinitialize = function(step) {
-      if (step %in% c('RunMainFit')) {
+    InvalidateAfterStep = function(step) {
+      if (
+        step %in% c('MODELLING')
+      ) {
         private$Catalogs$BootstrapFitTask <- NULL
         private$Catalogs$BootstrapFitResult <- NULL
         private$Catalogs$BootstrapFitStats <- NULL
       }
+
+      private$AppMgr$SetCompletedStep(step)
 
       return(invisible(self))
     }
   ),
 
   active = list(
-    Data = function() {
-      return(private$Catalogs$Data)
-    },
-
-    LastStep = function() {
-      return(private$Catalogs$LastStep)
+    Parameters = function(xmlModel) {
+      return(private$Catalogs$Parameters)
     },
 
     PopCombination = function() {

@@ -263,6 +263,16 @@ Events <- function(
     )
   })
 
+  observeEvent(appMgr$HIVModelMgr$BootstrapFitTask$HTMLRunLog, {
+    appMgr$SendMessage(
+      'BOOTSTRAP_RUN_LOG_SET',
+      payload = list(
+        ActionStatus = 'SUCCESS',
+        RunLog = appMgr$HIVModelMgr$BootstrapFitTask$HTMLRunLog
+      )
+    )
+  })
+
   observeEvent(input$cancelBootstrapBtn, {
     appMgr$HIVModelMgr$CancelBootstrapFit()
   })

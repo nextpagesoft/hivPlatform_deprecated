@@ -22,7 +22,13 @@ GetReportingDelaysPlots <- function(
     allQuant95 <- unname(quantile(densData$VarX, probs = 0.95, na.rm = TRUE))
     allQuant99 <- unname(quantile(densData$VarX, probs = 0.99, na.rm = TRUE))
 
-    allDensDelay <- density(densData$VarX, adjust = 4, n = 400)
+    allDensDelay <- density(
+      densData$VarX,
+      adjust = 4,
+      n = 200,
+      from = min(densData$VarX),
+      to = allQuant99
+    )
     x <- allDensDelay$x
     y <- allDensDelay$y
     sel <- x >= 0 & x <= allQuant99
@@ -42,7 +48,13 @@ GetReportingDelaysPlots <- function(
     fQuant95 <- unname(quantile(densData[Gender == 'F', VarX], probs = 0.95, na.rm = TRUE))
     fQuant99 <- unname(quantile(densData[Gender == 'F', VarX], probs = 0.99, na.rm = TRUE))
 
-    fDensDelay <- density(densData[Gender == 'F', VarX], adjust = 4, n = 400)
+    fDensDelay <- density(
+      densData[Gender == 'F', VarX],
+      adjust = 4,
+      n = 200,
+      from = densData[Gender == 'F', min(VarX)],
+      to = fQuant99
+    )
     x <- fDensDelay$x
     y <- fDensDelay$y
     sel <- x >= 0 & x <= fQuant99
@@ -61,7 +73,13 @@ GetReportingDelaysPlots <- function(
     mQuant95 <- unname(quantile(densData[Gender == 'M', VarX], probs = 0.95, na.rm = TRUE))
     mQuant99 <- unname(quantile(densData[Gender == 'M', VarX], probs = 0.99, na.rm = TRUE))
 
-    mDensDelay <- density(densData[Gender == 'M', VarX], adjust = 4, n = 400)
+    mDensDelay <- density(
+      densData[Gender == 'M', VarX],
+      adjust = 4,
+      n = 200,
+      from = densData[Gender == 'M', min(VarX)],
+      to = fQuant99
+    )
     x <- mDensDelay$x
     y <- mDensDelay$y
     sel <- x >= 0 & x <= mQuant99

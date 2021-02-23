@@ -4,12 +4,6 @@ object-assign
 @license MIT
 */
 
-/*!
- * ApexCharts v3.25.0
- * (c) 2018-2021 Juned Chhipa
- * Released under the MIT License.
- */
-
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -24,14 +18,6 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
-
-/*! svg.draggable.js - v2.2.2 - 2019-01-08
-* https://github.com/svgdotjs/svg.draggable.js
-* Copyright (c) 2019 Wout Fierens; Licensed MIT */
-
-/*! svg.filter.js - v2.0.2 - 2016-02-24
-* https://github.com/wout/svg.filter.js
-* Copyright (c) 2016 Wout Fierens; Licensed MIT */
 
 /**
  * A better abstraction over CSS.
@@ -61,6 +47,15 @@ PERFORMANCE OF THIS SOFTWARE.
 
 /** @license React v17.0.1
  * react-dom.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/** @license React v17.0.1
+ * react-is.production.min.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
  *

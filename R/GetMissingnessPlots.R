@@ -20,8 +20,7 @@ GetMissingnessPlots <- function(
   inputData,
   columnNames = c('Transmission', 'GroupedRegionOfOrigin', 'Age', 'FirstCD4Count'),
   labels = c('Transmission', 'Migrant', 'Age', 'CD4')
-)
-{
+) {
   stopifnot(!missing(inputData))
   stopifnot(length(columnNames) == length(labels))
   stopifnot(length(columnNames) == length(unique(columnNames)))
@@ -66,24 +65,47 @@ GetMissingnessPlots <- function(
   setorder(plot2Data, Gender, -Percentage)
   plot2Data[, (columnNames) := lapply(.SD, Negate), .SDcols = columnNames]
 
+  GetPlot2Data <- function(gender) {
+    data <- unname(as.matrix(plot2Data[Gender == gender, -c('Gender', 'Percentage')]))
+    dims <- dim(data)
+    values <- matrix(data, nrow = prod(dims), ncol = 1, byrow = TRUE)
+    result <- cbind(
+      rep(seq_len(dims[2]) - 1, each = dims[1]),
+      rep(seq_len(dims[1]) - 1, times = dims[2]),
+      values
+    )
+    return(result)
+  }
+
   plot2 <- list(
     chartCategories = chartCategories,
     chartData = list(
-      all = unname(as.matrix(plot2Data[Gender == 'A', -c('Gender', 'Percentage')])),
-      female = unname(as.matrix(plot2Data[Gender == 'F', -c('Gender', 'Percentage')])),
-      male = unname(as.matrix(plot2Data[Gender == 'M', -c('Gender', 'Percentage')]))
+      all = GetPlot2Data('A'),
+      female = GetPlot2Data('F'),
+      male = GetPlot2Data('M')
     )
   )
 
   # ------------------------------------------------------------------------------------------------
   plot2Data[, name := apply(.SD, 1, AllPresent), .SDcols = columnNames]
-  setorder(plot2Data, Gender, Percentage)
   setnames(plot2Data, c('Percentage'), c('y'))
   plot3 <- list(
     chartData = list(
-      all = apply(plot2Data[Gender == 'A'], 1, function(x) list(name = x[['name']], y = x[['y']])),
-      female = apply(plot2Data[Gender == 'F'], 1, function(x) list(name = x[['name']], y = x[['y']])),
-      male = apply(plot2Data[Gender == 'M'], 1, function(x) list(name = x[['name']], y = x[['y']]))
+      all = apply(
+        plot2Data[Gender == 'A'],
+        1,
+        function(x) list(name = x[['name']], y = as.numeric(x[['y']]))
+      ),
+      female = apply(
+        plot2Data[Gender == 'F'],
+        1,
+        function(x) list(name = x[['name']], y = as.numeric(x[['y']]))
+      ),
+      male = apply(
+        plot2Data[Gender == 'M'],
+        1,
+        function(x) list(name = x[['name']], y = as.numeric(x[['y']]))
+      )
     )
   )
 
@@ -95,8 +117,15 @@ GetMissingnessPlots <- function(
     YearOfHIVDiagnosis = chartCategories
   )
   plot4Data <- rbind(
-    missData[, lapply(.SD, GetRelFreq), by = .(Gender, YearOfHIVDiagnosis), .SDcols = columnNames],
-    missData[, lapply(.SD, GetRelFreq), by = .(YearOfHIVDiagnosis), .SDcols = columnNames][, Gender := 'A']
+    missData[,
+      lapply(.SD, GetRelFreq),
+      by = .(Gender, YearOfHIVDiagnosis),
+      .SDcols = columnNames
+    ],
+    missData[,
+      lapply(.SD, GetRelFreq),
+      by = .(YearOfHIVDiagnosis), .SDcols = columnNames
+    ][, Gender := 'A']
   )
   plot4Data <- merge(
     combinations,

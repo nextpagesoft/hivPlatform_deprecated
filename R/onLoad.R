@@ -3,7 +3,7 @@
   shiny::registerInputHandler('AttrMappingArray', ConvertAttrMappingArray)
   shiny::registerInputHandler('HIVModelParams', ConvertHIVModelParams)
 
-  invisible()
+  invisible(NULL)
 }
 
 .onUnload <- function(libname, pkgname) {
@@ -11,5 +11,5 @@
   shiny::removeInputHandler('AttrMappingArray')
   shiny::removeInputHandler('HIVModelParams')
 
-  invisible()
+  invisible(NULL)
 }

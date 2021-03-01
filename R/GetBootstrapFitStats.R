@@ -20,7 +20,9 @@ GetBootstrapFitStats <- function(
       Mean = apply(resultSample, 1, mean, na.rm = TRUE),
       Std = apply(resultSample, 1, sd, na.rm = TRUE)
     )
-    rownames(result) <- years
+    result <- as.data.table(result)
+    result[, Year := years]
+    setnames(result, old = 1:3, new = c('LB', 'Median', 'UB'))
     return(result)
   }), colNames)
 

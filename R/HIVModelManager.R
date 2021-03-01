@@ -30,7 +30,8 @@ HIVModelManager <- R6::R6Class(
         MainFitResult = NULL,
         BootstrapFitTask = NULL,
         BootstrapFitResult = NULL,
-        BootstrapFitStats = NULL
+        BootstrapFitStats = NULL,
+        PlotData = NULL
       )
     },
 
@@ -99,9 +100,10 @@ HIVModelManager <- R6::R6Class(
 
         private$Catalogs$MainFitTask <- Task$new(
           function(dataSets, settings, parameters) {
+            suppressMessages(pkgload::load_all())
             options(width = 120)
 
-            result <- list()
+            impResult <- list()
             for (imp in names(dataSets)) {
               context <- hivModelling::GetRunContext(
                 data = dataSets[[imp]],
@@ -114,7 +116,7 @@ HIVModelManager <- R6::R6Class(
               fitResults <- hivModelling::PerformMainFit(context, popData, attemptSimplify = TRUE)
               runTime <- Sys.time() - startTime
 
-              result[[imp]] <- list(
+              impResult[[imp]] <- list(
                 Context = context,
                 PopData = popData,
                 Results = fitResults,
@@ -122,6 +124,14 @@ HIVModelManager <- R6::R6Class(
                 Imputation = imp
               )
             }
+
+            plotData <- GetHIVPlotData(impResult, NULL)
+
+            result <- list(
+              MainFitResult = impResult,
+              PlotData = plotData
+            )
+
             return(result)
           },
           args = list(
@@ -142,18 +152,21 @@ HIVModelManager <- R6::R6Class(
           successCallback = function(result) {
             private$Catalogs$PopCombination <- popCombination
             private$Catalogs$AggrDataSelection <- aggrDataSelection
-            private$Catalogs$MainFitResult <- result
+            private$Catalogs$MainFitResult <- result$MainFitResult
+            private$Catalogs$PlotData <- result$PlotData
             private$InvalidateAfterStep('MODELLING')
             PrintAlert('Running HIV Model main fit task finished')
             private$SendMessage(
               'MODELS_RUN_FINISHED',
               payload = list(
                 ActionStatus = 'SUCCESS',
-                ActionMessage = 'Running HIV Model main fit task finished'
+                ActionMessage = 'Running HIV Model main fit task finished',
+                PlotData = result$PlotData
               )
             )
           },
-          failCallback = function() {
+          failCallback = function(failMsg) {
+            print(failMsg)
             PrintAlert('Running HIV Model main fit task failed', type = 'danger')
             private$SendMessage(
               'MODELS_RUN_FINISHED',
@@ -334,9 +347,12 @@ HIVModelManager <- R6::R6Class(
 
             stats <- GetBootstrapFitStats(fits)
 
+            plotData <- GetHIVPlotData(mainFitResult, stats)
+
             result <- list(
               Fits = fits,
-              Stats = stats
+              Stats = stats,
+              PlotData = plotData
             )
 
             return(result)
@@ -355,13 +371,15 @@ HIVModelManager <- R6::R6Class(
           successCallback = function(result) {
             private$Catalogs$BootstrapFitResult <- result$Fits
             private$Catalogs$BootstrapFitStats <- result$Stats
+            private$Catalogs$PlotData <- result$PlotData
             private$InvalidateAfterStep('BOOTSTRAP')
             PrintAlert('Running HIV Model bootstrap fit task finished')
             private$SendMessage(
               'BOOTSTRAP_RUN_FINISHED',
               payload = list(
                 ActionStatus = 'SUCCESS',
-                ActionMessage = 'Running HIV Model bootstrap fit task finished'
+                ActionMessage = 'Running HIV Model bootstrap fit task finished',
+                PlotData = result$PlotData
               )
             )
           },
@@ -474,6 +492,10 @@ HIVModelManager <- R6::R6Class(
 
     BootstrapFitStats = function() {
       return(private$Catalogs$BootstrapFitStats)
+    },
+
+    PlotData = function() {
+      return(private$Catalogs$PlotData)
     }
   )
 )

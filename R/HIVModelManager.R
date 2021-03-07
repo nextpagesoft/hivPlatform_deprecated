@@ -167,8 +167,6 @@ HIVModelManager <- R6::R6Class(
               )
               popData <- hivModelling::GetPopulationData(context)
 
-              print(popData)
-
               startTime <- Sys.time()
               fitResults <- hivModelling::PerformMainFit(
                 context,

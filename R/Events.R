@@ -233,8 +233,9 @@ Events <- function(
     params <- runSettings$Params
     popCombination <- runSettings$PopCombination
     aggrDataSelection <- runSettings$AggrDataSelection
+
     appMgr$HIVModelMgr$RunMainFit(
-      settings = list(Verbose = TRUE),
+      settings = list(Verbose = FALSE),
       parameters = params,
       popCombination = popCombination,
       aggrDataSelection = aggrDataSelection
@@ -258,7 +259,7 @@ Events <- function(
   observeEvent(input$runBootstrapBtn, {
     params <- input$runBootstrapBtn
     appMgr$HIVModelMgr$RunBootstrapFit(
-      bsCount = params$count,
+      bsCount = as.integer(params$count),
       bsType = params$type
     )
   })

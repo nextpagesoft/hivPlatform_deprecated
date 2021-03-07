@@ -74,6 +74,7 @@ PrintAlert <- function(
     'warning' = cli::cli_alert_warning,
     'info'    = cli::cli_alert_info,
     'success' = cli::cli_alert_success,
+    'text'    = cli::cli_text,
     cli::cli_alert
   )
 
@@ -100,7 +101,7 @@ PrintBullets <- function(
 ) {
   formattedText <- capt0({
     cli::cli_ul()
-    sapply(items, cli::cli_li)
+    sapply(items, cli::cli_li, .envir = .envir)
     cli::cli_end()
   })
   cat(formattedText)

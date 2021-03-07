@@ -87,8 +87,8 @@ Task <- R6::R6Class(
       return(invisible(self))
     },
 
-    Stop = function() {
-      if (self$IsRunning) {
+    Stop = function(force = FALSE) {
+      if (force || self$IsRunning) {
         private$Catalogs$TaskHandle$kill()
       }
     }
@@ -184,7 +184,8 @@ Task <- R6::R6Class(
             } else if (
               private$Catalogs$Status == 'FAIL' && is.function(private$FailCallback)
             ) {
-              private$FailCallback()
+              print(private$Catalogs$FailMessage)
+              private$FailCallback(isolate(private$Catalogs$FailMessage))
             }
             o$destroy()
           }
@@ -210,7 +211,7 @@ Task <- R6::R6Class(
       } else if (
         self$Status == 'FAIL' && is.function(private$FailCallback)
       ) {
-        private$FailCallback()
+        private$FailCallback(private$Catalogs$FailMessage)
       }
       return(invisible(self))
     }

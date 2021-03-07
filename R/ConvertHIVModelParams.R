@@ -14,8 +14,8 @@ ConvertHIVModelParams <- function(
     R = 'PlaceOfResidence'
   )
 
-  casePopulations <- sapply(x$popCombination$populations, '[[', 1)
-  casePopulations <- lapply(casePopulations, function(casePopulation) {
+  casePopulationsAbbr <- sapply(x$popCombination$casePopulations, '[[', 1)
+  casePopulations <- lapply(casePopulationsAbbr, function(casePopulation) {
     casePopulation  <- strsplit(casePopulation, ', ')[[1]]
     l <- lapply(casePopulation, function(el) {
       vals <- strsplit(el, ' ')[[1]]
@@ -29,11 +29,11 @@ ConvertHIVModelParams <- function(
       Variables = sapply(l, '[[', 'Variable')
     )
   })
-
-  aggrCombination <- x$popCombination$aggrPopulations
+  aggrPopulations <- sapply(x$popCombination$aggrPopulations, '[[', 1)
   popCombination <- list(
     Case = casePopulations,
-    Aggr = aggrCombination
+    CaseAbbr = casePopulationsAbbr,
+    Aggr = aggrPopulations
   )
 
   aggrDataSelection <- x$aggrDataSelection
@@ -53,7 +53,7 @@ ConvertHIVModelParams <- function(
     Name = sapply(aggrDataSelection, '[[', 'Name'),
     Use = sapply(aggrDataSelection, '[[', 'Use'),
     MinYear = sapply(aggrDataSelection, '[[', 'MinYear'),
-    Maxyear = sapply(aggrDataSelection, '[[', 'MaxYear')
+    MaxYear = sapply(aggrDataSelection, '[[', 'MaxYear')
   )
 
   params <- list(
@@ -78,7 +78,7 @@ ConvertHIVModelParams <- function(
       Intervals = intervals
     ),
     PopCombination = popCombination,
-    aggrDataSelection = aggrDataSelection
+    AggrDataSelection = aggrDataSelection
   )
 
   return(params)

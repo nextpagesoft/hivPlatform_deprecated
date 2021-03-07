@@ -94,26 +94,88 @@ HIVModelManager <- R6::R6Class(
       tryCatch({
         PrintAlert('Starting HIV Model main fit task')
 
-        caseData <- private$AppMgr$CaseMgr$Data
-        aggrData <- private$AppMgr$AggrMgr$Data
-        dataSets <- CombineData(caseData, aggrData, popCombination, aggrDataSelection)
-
         private$Catalogs$MainFitTask <- Task$new(
-          function(dataSets, settings, parameters) {
+          function(
+            caseData,
+            aggrData,
+            settings,
+            parameters,
+            popCombination,
+            aggrDataSelection
+          ) {
             suppressMessages(pkgload::load_all())
             options(width = 120)
 
+            PrintH1('Parameters')
+
+            if (length(popCombination$Aggr) > 0) {
+              PrintH2('Aggregated data selection')
+              cli::cli_text(
+                '{.val {cat(capture.output(aggrDataSelection), sep = "\n")}}'
+              )
+            }
+
+            PrintH2('Population combination')
+            if (!is.null(caseData)) {
+              if (length(popCombination$CaseAbbr) > 0) {
+                PrintAlert('Case-based populations: {.val {popCombination$CaseAbbr}}')
+              } else {
+                PrintAlert('Case-based populations: {.val \'All data available\'}')
+              }
+            } else {
+              PrintAlert('Case-based populations: {.val \'None\'}')
+            }
+
+            if (!is.null(aggrData) && length(popCombination$Aggr) > 0) {
+              PrintAlert('Aggregated populations: {.val {popCombination$Aggr}}')
+            } else {
+              PrintAlert('Aggregated populations: {.val \'None\'}')
+            }
+
+            PrintH2('Time intervals and diagnosis rates modelling')
+            cli::cli_text(
+              '{.val {cat(capture.output(parameters$Intervals), sep = "\n")}}'
+            )
+
+            PrintH2('Advanced paramaters')
+            PrintAlert(' 1. Range of calculations                                : {.val {parameters$ModelMinYear} - {parameters$ModelMaxYear}}')
+            PrintAlert(' 2. HIV diagnoses, total                                 : {.val {parameters$FitPosMinYear} - {parameters$FitPosMaxYear}}')
+            PrintAlert(' 3. HIV diagnoses, by CD4 count                          : {.val {parameters$FitPosCD4MinYear} - {parameters$FitPosCD4MaxYear}}')
+            PrintAlert(' 4. AIDS diagnoses, total                                : {.val {parameters$FitAIDSMinYear} - {parameters$FitAIDSMaxYear}}')
+            PrintAlert(' 5. HIV/AIDS diagnoses, total                            : {.val {parameters$FitAIDSPosMinYear} - {parameters$FitAIDSPosMaxYear}}')
+            PrintAlert(' 6. Do you have data from the start of the epidemic      : {.val {ifelse(parameters$FullData, "Yes", "No")}}')
+            PrintAlert(' 7. Knots count                                          : {.val {parameters$ModelNoKnots}}')
+            PrintAlert(' 8. Start at zero                                        : {.val {ifelse(parameters$StartIncZero, "Yes", "No")}}')
+            PrintAlert(' 9. Prevent sudden changes at end of observation interval: {.val {ifelse(parameters$MaxIncCorr, "Yes", "No")}}')
+            PrintAlert('10. Maximum likelihood distribution                      : {.val {parameters$FitDistribution}}')
+            PrintAlert('11. Extra diagnosis rate due to non-AIDS symptoms        : {.val {parameters$Delta4Fac}}')
+            PrintAlert('12. Country-specific settings                            : {.val {parameters$Country}}')
+
+            dataSets <- CombineData(caseData, aggrData, popCombination, aggrDataSelection)
+
+            PrintH1('Performing main fit')
+
             impResult <- list()
             for (imp in names(dataSets)) {
+              PrintH2('Iteration {.val {imp}}')
               context <- hivModelling::GetRunContext(
                 data = dataSets[[imp]],
                 settings = settings,
-                parameters = parameters
+                parameters = list(
+                  INCIDENCE = parameters
+                )
               )
               popData <- hivModelling::GetPopulationData(context)
 
+              print(popData)
+
               startTime <- Sys.time()
-              fitResults <- hivModelling::PerformMainFit(context, popData, attemptSimplify = TRUE)
+              fitResults <- hivModelling::PerformMainFit(
+                context,
+                popData,
+                attemptSimplify = TRUE,
+                verbose = TRUE
+              )
               runTime <- Sys.time() - startTime
 
               impResult[[imp]] <- list(
@@ -135,20 +197,14 @@ HIVModelManager <- R6::R6Class(
             return(result)
           },
           args = list(
-            dataSets = dataSets,
+            caseData = private$AppMgr$CaseMgr$Data,
+            aggrData = private$AppMgr$AggrMgr$Data,
             settings = settings,
-            parameters = parameters
+            parameters = parameters,
+            popCombination = popCombination,
+            aggrDataSelection = aggrDataSelection
           ),
           session = private$Session,
-          progressCallback = function(runLog) {
-            private$SendMessage(
-              'MODELS_RUN_LOG_SET',
-              payload = list(
-                ActionStatus = 'SUCCESS',
-                RunLog = runLog
-              )
-            )
-          },
           successCallback = function(result) {
             private$Catalogs$PopCombination <- popCombination
             private$Catalogs$AggrDataSelection <- aggrDataSelection
@@ -165,8 +221,10 @@ HIVModelManager <- R6::R6Class(
               )
             )
           },
-          failCallback = function(failMsg) {
-            print(failMsg)
+          failCallback = function(msg = NULL) {
+            if (!is.null(msg)) {
+              PrintAlert(msg, type = 'danger')
+            }
             PrintAlert('Running HIV Model main fit task failed', type = 'danger')
             private$SendMessage(
               'MODELS_RUN_FINISHED',
@@ -177,6 +235,7 @@ HIVModelManager <- R6::R6Class(
             )
           }
         )
+
         private$SendMessage(
           'MODELS_RUN_STARTED',
           payload = list(
@@ -250,9 +309,11 @@ HIVModelManager <- R6::R6Class(
           ) {
             suppressMessages(pkgload::load_all())
             options(width = 120)
+
             mainCount <- length(mainFitResult)
             fits <- list()
             i <- 0
+
             for (imp in names(mainFitResult)) {
               i <- i + 1
               mainFit <- mainFitResult[[imp]]
@@ -361,19 +422,21 @@ HIVModelManager <- R6::R6Class(
             bsCount = bsCount,
             bsType = bsType,
             maxRunTime = maxRunTime,
-            mainFitResult = private$Catalogs$MainFitResult,
-            caseData = private$AppMgr$CaseMgr$Data,
-            aggrData = private$AppMgr$AggrMgr$Data,
-            popCombination = private$Catalogs$PopCombination,
-            aggrDataSelection = private$Catalogs$AggrDataSelection
+            mainFitResult = isolate(private$Catalogs$MainFitResult),
+            caseData = isolate(private$AppMgr$CaseMgr$Data),
+            aggrData = isolate(private$AppMgr$AggrMgr$Data),
+            popCombination = isolate(private$Catalogs$PopCombination),
+            aggrDataSelection = isolate(private$Catalogs$AggrDataSelection)
           ),
           session = private$Session,
           successCallback = function(result) {
+            PrintAlert('Running HIV Model bootstrap fit task finished')
+
             private$Catalogs$BootstrapFitResult <- result$Fits
             private$Catalogs$BootstrapFitStats <- result$Stats
             private$Catalogs$PlotData <- result$PlotData
             private$InvalidateAfterStep('BOOTSTRAP')
-            PrintAlert('Running HIV Model bootstrap fit task finished')
+
             private$SendMessage(
               'BOOTSTRAP_RUN_FINISHED',
               payload = list(
@@ -383,8 +446,12 @@ HIVModelManager <- R6::R6Class(
               )
             )
           },
-          failCallback = function() {
+          failCallback = function(msg = NULL) {
             PrintAlert('Running HIV Model bootstrap fit task failed', type = 'danger')
+            if (!is.null(msg)) {
+              PrintAlert(msg, type = 'danger')
+            }
+            private$Catalogs$BootstrapFitTask$Stop(force = TRUE)
             private$SendMessage(
               'BOOTSTRAP_RUN_FINISHED',
               payload = list(
@@ -394,6 +461,7 @@ HIVModelManager <- R6::R6Class(
             )
           }
         )
+
         private$SendMessage(
           'BOOTSTRAP_RUN_STARTED',
           payload = list(
@@ -418,6 +486,7 @@ HIVModelManager <- R6::R6Class(
 
     CancelBootstrapFit = function() {
       if (!is.null(private$Catalogs$BootstrapFitTask)) {
+        private$Catalogs$BootstrapFitTask$Stop()
         private$SendMessage(
           'BOOTSTRAP_RUN_CANCELLED',
           payload = list(

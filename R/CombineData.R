@@ -54,41 +54,34 @@ CombineData <- function(
   }
   set1 <- PrepareDataSetsForModel(dt1, splitBy = 'Imputation')
 
-  if (!is.null(aggrData)) {
-    if (!is.null(popCombination$Aggr)) {
-      # 2a. Filter and aggregate populations
-      set2 <- lapply(aggrData, function(el) {
-        if (
-          !is.null(popCombination$Aggr) &&
-            all(popCombination$Aggr %chin% colnames(el))
-        ) {
-          el[, .(Count = sum(.SD)), keyby = .(Year), .SDcols = popCombination$Aggr]
+  if (!is.null(aggrData) && length(popCombination$Aggr) > 0) {
+    # 2a. Filter and aggregate populations
+    set2 <- lapply(aggrData, function(el) {
+      if (all(popCombination$Aggr %chin% colnames(el))) {
+        el[, .(Count = sum(.SD)), keyby = .(Year), .SDcols = popCombination$Aggr]
+      } else {
+        data.table(Year = integer(), Count = numeric())
+      }
+    })
+    if (!is.null(aggrDataSelection)) {
+      # 2b. Filter aggregated data on the use flag
+      set2 <- setNames(lapply(names(set2), function(dataName) {
+        if (dataName %in% aggrDataSelection[Use == TRUE, Name]) {
+          set2[[dataName]]
         } else {
           data.table(Year = integer(), Count = numeric())
         }
-      })
-      if (!is.null(aggrDataSelection)) {
-        # 2b. Filter aggregated data on the use flag
-        set2 <- setNames(lapply(names(set2), function(dataName) {
-          if (dataName %in% aggrDataSelection[Use == TRUE, Name]) {
-            set2[[dataName]]
-          } else {
-            data.table(Year = integer(), Count = numeric())
-          }
-        }), names(aggrData))
+      }), names(aggrData))
 
-        # 2c. Filter aggregated data on the years
-        set2 <- setNames(lapply(names(set2), function(dataName) {
-          years <- aggrDataSelection[Name == dataName, c(MinYear, MaxYear)]
-          if (length(years) == 2) {
-            set2[[dataName]][Year %between% c(years)]
-          } else {
-            set2[[dataName]]
-          }
-        }), names(set2))
-      }
-    } else {
-      set2 <- NULL
+      # 2c. Filter aggregated data on the years
+      set2 <- setNames(lapply(names(set2), function(dataName) {
+        years <- aggrDataSelection[Name == dataName, c(MinYear, MaxYear)]
+        if (length(years) == 2) {
+          set2[[dataName]][Year %between% c(years)]
+        } else {
+          set2[[dataName]]
+        }
+      }), names(set2))
     }
   } else {
     set2 <- NULL

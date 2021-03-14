@@ -83,13 +83,12 @@ Task <- R6::R6Class(
       private$Catalogs$StartTime <- taskHandle$get_start_time()
 
       private$Monitor()
-
       return(invisible(self))
     },
 
     Stop = function(force = FALSE) {
       if (force || self$IsRunning) {
-        private$Catalogs$TaskHandle$kill()
+        isolate(private$Catalogs$TaskHandle)$kill()
       }
     }
   ),
@@ -115,6 +114,7 @@ Task <- R6::R6Class(
     # Shiny session
     Session = NULL,
 
+    # Reference to the underlying process
     Process = NULL,
 
     # Start job immediately
@@ -180,12 +180,11 @@ Task <- R6::R6Class(
             if (
               private$Catalogs$Status == 'SUCCESS' && is.function(private$SuccessCallback)
             ) {
-              private$SuccessCallback(self$Result)
+              private$SuccessCallback(isolate(self$Result))
             } else if (
               private$Catalogs$Status == 'FAIL' && is.function(private$FailCallback)
             ) {
-              print(private$Catalogs$FailMessage)
-              private$FailCallback(isolate(private$Catalogs$FailMessage))
+              private$FailCallback(private$Catalogs$FailMessage)
             }
             o$destroy()
           }
@@ -203,15 +202,17 @@ Task <- R6::R6Class(
         cat(log)
         private$AddToRunLog(log)
       }
-      result <- self$Result
+
+      result <- isolate(self$Result)
+      status <- isolate(self$Status)
       if (
-        self$Status == 'SUCCESS' && is.function(private$SuccessCallback)
+        status == 'SUCCESS' && is.function(private$SuccessCallback)
       ) {
-        private$SuccessCallback(self$Result)
+        private$SuccessCallback(result)
       } else if (
-        self$Status == 'FAIL' && is.function(private$FailCallback)
+        status == 'FAIL' && is.function(private$FailCallback)
       ) {
-        private$FailCallback(private$Catalogs$FailMessage)
+        private$FailCallback(isolate(private$Catalogs$FailMessage))
       }
       return(invisible(self))
     }
@@ -223,13 +224,14 @@ Task <- R6::R6Class(
         result <- NULL
         tryCatch({
           result <- private$Catalogs$TaskHandle$get_result()
-        }, error = function(e) {
+        },
+        error = function(e) {
           private$Catalogs$Status <- 'FAIL'
-          private$Catalogs$FailMessage <- e
+          private$Catalogs$FailMessage <- gsub('callr subprocess failed: ', '', e$message)
         })
         private$Catalogs$Result <- result
       }
-      return(private$Catalogs$Result)
+      return(isolate(private$Catalogs$Result))
     },
 
     RunLog = function() {

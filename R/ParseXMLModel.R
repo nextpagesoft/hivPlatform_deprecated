@@ -130,8 +130,8 @@ ParseXMLModel <- function(
     list(
       startYear = as.integer(el$StartYear[[1]]),
       jump = as.logical(el$Jump[[1]]),
-      changeInInterval = as.logical(el$ChangingInInterval[[1]]),
-      diffByCD4 = as.logical(el$ChangingInInterval[[1]])
+      diffByCD4 = as.logical(el$DifferentByCD4[[1]]),
+      changeInInterval = as.logical(el$ChangingInInterval[[1]])
     )
   })
 
@@ -163,14 +163,8 @@ ParseXMLModel <- function(
       'NEGATIVE_BINOMIAL',
       'POISSON'
     ),
-    rDisp = as.integer(params$Model$IncidenceModel$RDisp[[1]]),
     delta4Fac = as.integer(params$Model$IncidenceModel$Delta4Fac[[1]]),
     maxIncCorr = as.logical(params$Model$IncidenceModel$MaxIncCorr[[1]]),
-    splineType = ifelse(
-      params$Model$IncidenceModel$SplineType[[1]] == 'B-splines',
-      'B-SPLINE',
-      'M-SPLINE'
-    ),
     fullData = as.logical(params$Model$IncidenceModel$FullData[[1]]),
     timeIntervals = timeIntervals
   )

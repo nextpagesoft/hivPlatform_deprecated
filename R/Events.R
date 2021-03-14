@@ -114,64 +114,25 @@ Events <- function(
   })
 
   observeEvent(input$summaryFilters, {
-    diagYearRange <- c(
-      input$summaryFilters$DiagYear$MinYear,
-      input$summaryFilters$DiagYear$MaxYear
-    )
-
-    notifQuarterRange <- c(
-      input$summaryFilters$NotifQuarter$MinYear,
-      input$summaryFilters$NotifQuarter$MaxYear
-    )
-
-    if (
-      any(is.null(diagYearRange)) ||
-      any(is.null(notifQuarterRange)) ||
-      is.null(appMgr$CaseMgr$PreProcessedData)
-    ) {
-      return(NULL)
+    filters <- input$summaryFilters
+    if (!(all(sapply(filters$DiagYear, is.null)) || all(sapply(filters$NotifQuarter, is.null)))) {
+      appMgr$CaseMgr$SetFilters(input$summaryFilters)
     }
-
-    data <- appMgr$CaseMgr$PreProcessedData[
-      is.na(YearOfHIVDiagnosis) |
-      is.na(NotificationTime) |
-      (
-        YearOfHIVDiagnosis %between% diagYearRange &
-        NotificationTime %between% notifQuarterRange
-      )
-    ]
-
-    missPlotData <- GetMissingnessPlots(data)
-    repDelPlotData <- GetReportingDelaysPlots(data)
-
-    summary <- list(
-      SelectedCount = nrow(data),
-      TotalCount = nrow(appMgr$CaseMgr$PreProcessedData),
-      MissPlotData = missPlotData,
-      RepDelPlotData = repDelPlotData
-    )
-
-    appMgr$SendMessage(
-      type = 'CASE_BASED_SUMMARY_DATA_PREPARED',
-      payload = list(
-        ActionStatus = 'SUCCESS',
-        ActionMessage = 'Summary has been prepared',
-        Summary = summary
-      )
-    )
-
-    appMgr$SetCompletedStep('CASE_BASED_SUMMARY')
   }, ignoreInit = TRUE)
 
   observeEvent(input$runAdjustBtn, {
     params <- input$runAdjustBtn
     adjustmentSpecs <- GetAdjustmentSpecsWithParams(params)
-    appMgr$CaseMgr$RunAdjustments(adjustmentSpecs, params$Filter)
+    appMgr$CaseMgr$RunAdjustments(adjustmentSpecs)
   })
 
   observeEvent(input$cancelAdjustBtn, {
     appMgr$CaseMgr$CancelAdjustments()
   })
+
+  observeEvent(input$aggrFilters, {
+    appMgr$HIVModelMgr$SetAggrFilters(input$aggrFilters)
+  }, ignoreInit = TRUE)
 
   observeEvent(appMgr$CaseMgr$AdjustmentTask$HTMLRunLog, {
     appMgr$SendMessage(
@@ -225,20 +186,18 @@ Events <- function(
   })
 
   observeEvent(input$xmlModel, {
-    appMgr$HIVModelMgr$SetParameters(input$xmlModel)
+    appMgr$HIVModelMgr$LoadParameters(input$xmlModel)
   })
 
   observeEvent(input$runModelBtn, {
     runSettings <- input$runModelBtn
     params <- runSettings$Params
     popCombination <- runSettings$PopCombination
-    aggrDataSelection <- runSettings$AggrDataSelection
 
     appMgr$HIVModelMgr$RunMainFit(
       settings = list(Verbose = FALSE),
       parameters = params,
-      popCombination = popCombination,
-      aggrDataSelection = aggrDataSelection
+      popCombination = popCombination
     )
   })
 

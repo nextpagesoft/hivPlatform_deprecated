@@ -31,7 +31,11 @@ RenderReportForAdjSpec <- function(
   )
   reportFilePath <- GetSystemFile('reports', fileNameSuffix, reportFileName)
 
-  report <- RenderReportToHTML(reportFilePath = reportFilePath, params = list(InputData = params))
+  if (file.exists(reportFilePath)) {
+    report <- RenderReportToHTML(reportFilePath = reportFilePath, params = list(InputData = params))
+  } else {
+    report <- NULL
+  }
 
   return(report)
 }

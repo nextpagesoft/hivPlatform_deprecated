@@ -24,7 +24,8 @@ AggrDataManager <- R6::R6Class(
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
         FileName = NULL,
-        Data = NULL
+        Data = NULL,
+        PopulationNames = NULL
       )
     },
 
@@ -38,7 +39,10 @@ AggrDataManager <- R6::R6Class(
     ReadData = function(
       fileName
     ) {
-      if (!is.element(private$AppMgr$Steps['SESSION_INITIALIZED'], private$AppMgr$CompletedSteps)) {
+      if (!is.null(private$AppMgr) && !is.element(
+        private$AppMgr$Steps['SESSION_INITIALIZED'],
+        private$AppMgr$CompletedSteps
+      )) {
         PrintAlert(
           'AppManager is not initialized properly before reading data',
           type = 'danger'
@@ -51,10 +55,11 @@ AggrDataManager <- R6::R6Class(
       tryCatch({
         data <- hivModelling::ReadInputData(fileName)
         dataNames <- names(data)
+        dataYears <- lapply(data, '[[', 'Year')
         dataTypesGroupings <- c('^Dead$', '^AIDS$', '^(HIV|HIVAIDS)$', '^HIV_CD4_[1-4]{1}$')
         dataFiles <- lapply(dataTypesGroupings, function(grouping) {
           names <- grep(grouping, dataNames, value = TRUE)
-          years <- lapply(data[names], '[[', 'Year')
+          years <- dataYears[names]
           minYear <- min(sapply(years, min))
           maxYear <- max(sapply(years, max))
           list(
@@ -63,6 +68,7 @@ AggrDataManager <- R6::R6Class(
             years = c(minYear, maxYear)
           )
         })
+        rangeYears <- c(min(sapply(dataYears, min)), max(sapply(dataYears, max)))
         populationNames <- names(data[[1]])[-1]
       },
       error = function(e) {
@@ -74,14 +80,21 @@ AggrDataManager <- R6::R6Class(
       if (status == 'SUCCESS') {
         private$Catalogs$FileName <- fileName
         private$Catalogs$Data <- data
-        private$AppMgr$SetCompletedStep('AGGR_READ')
+        private$Catalogs$PopulationNames <- populationNames
+        if (!is.null(private$AppMgr)) {
+          private$AppMgr$SetCompletedStep('AGGR_READ')
+        }
         PrintAlert('Data file {.file {fileName}} loaded')
         payload <- list(
           ActionStatus = status,
           ActionMessage = msg,
           DataFiles = dataFiles,
-          PopulationNames = names(data[[1]])[-1]
+          PopulationNames = names(data[[1]])[-1],
+          RangeYears = rangeYears
         )
+        if (is.function(private$AppMgr$HIVModelMgr$DetermineYearRanges)) {
+          private$AppMgr$HIVModelMgr$DetermineYearRanges()
+        }
       } else {
         PrintAlert('Loading data file {.file {fileName}} failed', type = 'danger')
         payload <- list(
@@ -120,6 +133,10 @@ AggrDataManager <- R6::R6Class(
 
     Data = function() {
       return(private$Catalogs$Data)
+    },
+
+    PopulationNames = function() {
+      return(private$Catalogs$PopulationNames)
     }
   )
 )

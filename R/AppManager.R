@@ -88,7 +88,7 @@ AppManager <- R6::R6Class(
     },
 
     SaveState = function() {
-      PrintAlert('Saving state to file')
+      PrintAlert('Saving state to file - NOT IMPLEMENTED YET')
     },
 
     # USER ACTIONS =================================================================================
@@ -161,7 +161,10 @@ AppManager <- R6::R6Class(
             )
             self$SetCompletedStep('REPORTS')
           },
-          failCallback = function() {
+          failCallback = function(msg = NULL) {
+            if (!is.null(msg)) {
+              PrintAlert(msg, type = 'danger')
+            }
             PrintAlert('Running report task failed', type = 'danger')
             self$SendMessage(
               'CREATING_REPORT_FINISHED',

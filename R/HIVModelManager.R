@@ -23,11 +23,11 @@ HIVModelManager <- R6::R6Class(
       private$Session <- session
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
-        Parameters = NULL,
         PopCombination = NULL,
         AggrDataSelection = NULL,
         MainFitTask = NULL,
         MainFitResult = NULL,
+        Years = NULL,
         BootstrapFitTask = NULL,
         BootstrapFitResult = NULL,
         BootstrapFitStats = NULL,
@@ -41,11 +41,11 @@ HIVModelManager <- R6::R6Class(
 
     # USER ACTIONS =================================================================================
 
-    SetParameters = function(
+    LoadParameters = function(
       xmlModel
     ) {
       status <- 'SUCCESS'
-      msg <- 'Parameters read correctly'
+      msg <- 'Parameters loaded correctly'
       tryCatch({
         params <- ParseXMLModel(xmlModel)
       }, error = function(e) {
@@ -58,7 +58,6 @@ HIVModelManager <- R6::R6Class(
       })
 
       if (status == 'SUCCESS') {
-        private$Catalogs$Parameters <- params
         payload <- list(
           ActionStatus = status,
           ActionMessage = msg,
@@ -71,14 +70,83 @@ HIVModelManager <- R6::R6Class(
         )
       }
 
-      private$SendMessage('MODELS_PARAMS_SET', payload)
+      private$SendMessage('MODELS_PARAMS_LOADED', payload)
+    },
+
+    DetermineYearRanges = function() {
+      status <- 'SUCCESS'
+      msg <- 'Alllowed parameters determined'
+      tryCatch({
+        # Data
+        caseData <- FilterCaseBasedData(
+          private$AppMgr$CaseMgr$PreProcessedData,
+          private$AppMgr$CaseMgr$Filters
+        )
+        aggrData <- private$AppMgr$AggrMgr$Data
+
+        # Combination 'All data'
+        popCombination <- list(
+          Case = NULL,
+          Aggr = private$AppMgr$AggrMgr$PopulationNames
+        )
+
+        # Aggregated data filters
+        aggrDataSelection <- private$Catalogs$AggrDataSelection
+
+        dataSets <- CombineData(caseData, aggrData, popCombination, aggrDataSelection)[[1]]
+        optimalYears <- hivModelling::GetAllowedYearRanges(dataSets)
+        rangeYears <- lapply(dataSets, function(dt) dt[, c(min(Year), max(Year))])
+
+        # nolint start
+        # intervals <- hivModelling::GetIntervalsFromData(
+        #   minYear = years[['All']][[1]],
+        #   maxYear = years[['All']][[2]],
+        #   numIntervals = 5,
+        #   firstIntervalEndYear = 1984
+        # )
+        # nolint end
+      }, error = function(e) {
+        status <<- 'FAIL'
+        msg <<- 'There was a difficulty encountered when determining year ranges.'
+      })
+
+      if (status == 'SUCCESS') {
+        private$Catalogs$Years <- list(
+          Range = rangeYears,
+          Optimal = optimalYears
+        )
+        payload <- list(
+          ActionStatus = status,
+          ActionMessage = msg,
+          Years = private$Catalogs$Years
+          # Intervals = intervals # nolint
+        )
+      } else {
+        payload <- list(
+          ActionStatus = status,
+          ActionMessage = msg
+        )
+      }
+
+      private$SendMessage('MODELS_YEAR_RANGES_DETERMINED', payload)
+      PrintAlert('HIV model year ranges determined')
+      return(invisible(self))
+    },
+
+    SetAggrFilters = function(
+      aggrFilters
+    ) {
+      private$Catalogs$AggrDataSelection <- aggrFilters
+      PrintAlert('Aggregated data filters set')
+      print(aggrFilters)
+
+      self$DetermineYearRanges()
     },
 
     RunMainFit = function(
       settings = list(),
       parameters = list(),
-      popCombination = NULL,
-      aggrDataSelection = NULL
+      popCombination = NULL
     ) {
       if (!any(is.element(
         private$AppMgr$Steps[c('CASE_BASED_READ', 'AGGR_READ')],
@@ -120,16 +188,16 @@ HIVModelManager <- R6::R6Class(
               if (length(popCombination$CaseAbbr) > 0) {
                 PrintAlert('Case-based populations: {.val {popCombination$CaseAbbr}}')
               } else {
-                PrintAlert('Case-based populations: {.val \'All data available\'}')
+                PrintAlert('Case-based populations: All data available')
               }
             } else {
-              PrintAlert('Case-based populations: {.val \'None\'}')
+              PrintAlert('Case-based populations: None')
             }
 
             if (!is.null(aggrData) && length(popCombination$Aggr) > 0) {
               PrintAlert('Aggregated populations: {.val {popCombination$Aggr}}')
             } else {
-              PrintAlert('Aggregated populations: {.val \'None\'}')
+              PrintAlert('Aggregated populations: None')
             }
 
             PrintH2('Time intervals and diagnosis rates modelling')
@@ -138,18 +206,20 @@ HIVModelManager <- R6::R6Class(
             )
 
             PrintH2('Advanced paramaters')
-            PrintAlert(' 1. Range of calculations                                : {.val {parameters$ModelMinYear} - {parameters$ModelMaxYear}}')
-            PrintAlert(' 2. HIV diagnoses, total                                 : {.val {parameters$FitPosMinYear} - {parameters$FitPosMaxYear}}')
-            PrintAlert(' 3. HIV diagnoses, by CD4 count                          : {.val {parameters$FitPosCD4MinYear} - {parameters$FitPosCD4MaxYear}}')
-            PrintAlert(' 4. AIDS diagnoses, total                                : {.val {parameters$FitAIDSMinYear} - {parameters$FitAIDSMaxYear}}')
-            PrintAlert(' 5. HIV/AIDS diagnoses, total                            : {.val {parameters$FitAIDSPosMinYear} - {parameters$FitAIDSPosMaxYear}}')
-            PrintAlert(' 6. Do you have data from the start of the epidemic      : {.val {ifelse(parameters$FullData, "Yes", "No")}}')
-            PrintAlert(' 7. Knots count                                          : {.val {parameters$ModelNoKnots}}')
-            PrintAlert(' 8. Start at zero                                        : {.val {ifelse(parameters$StartIncZero, "Yes", "No")}}')
-            PrintAlert(' 9. Prevent sudden changes at end of observation interval: {.val {ifelse(parameters$MaxIncCorr, "Yes", "No")}}')
-            PrintAlert('10. Maximum likelihood distribution                      : {.val {parameters$FitDistribution}}')
-            PrintAlert('11. Extra diagnosis rate due to non-AIDS symptoms        : {.val {parameters$Delta4Fac}}')
-            PrintAlert('12. Country-specific settings                            : {.val {parameters$Country}}')
+            # nolint start
+            PrintAlert('Range of calculations                                : {parameters$ModelMinYear} - {parameters$ModelMaxYear}')
+            PrintAlert('HIV diagnoses, total                                 : {parameters$FitPosMinYear} - {parameters$FitPosMaxYear}')
+            PrintAlert('HIV diagnoses, by CD4 count                          : {parameters$FitPosCD4MinYear} - {parameters$FitPosCD4MaxYear}')
+            PrintAlert('AIDS diagnoses, total                                : {parameters$FitAIDSMinYear} - {parameters$FitAIDSMaxYear}')
+            PrintAlert('HIV/AIDS diagnoses, total                            : {parameters$FitAIDSPosMinYear} - {parameters$FitAIDSPosMaxYear}')
+            PrintAlert('Do you have data from the start of the epidemic      : {ifelse(parameters$FullData, "Yes", "No")}')
+            PrintAlert('Knots count                                          : {parameters$ModelNoKnots}')
+            PrintAlert('Start at zero                                        : {ifelse(parameters$StartIncZero, "Yes", "No")}')
+            PrintAlert('Prevent sudden changes at end of observation interval: {ifelse(parameters$MaxIncCorr, "Yes", "No")}')
+            PrintAlert('Maximum likelihood distribution                      : {parameters$FitDistribution}')
+            PrintAlert('Extra diagnosis rate due to non-AIDS symptoms        : {parameters$Delta4Fac}')
+            PrintAlert('Country-specific settings                            : {parameters$Country}')
+            # nolint end
 
             dataSets <- CombineData(caseData, aggrData, popCombination, aggrDataSelection)
 
@@ -200,12 +270,11 @@ HIVModelManager <- R6::R6Class(
             settings = settings,
             parameters = parameters,
             popCombination = popCombination,
-            aggrDataSelection = aggrDataSelection
+            aggrDataSelection = private$Catalogs$AggrDataSelection
           ),
           session = private$Session,
           successCallback = function(result) {
             private$Catalogs$PopCombination <- popCombination
-            private$Catalogs$AggrDataSelection <- aggrDataSelection
             private$Catalogs$MainFitResult <- result$MainFitResult
             private$Catalogs$PlotData <- result$PlotData
             private$InvalidateAfterStep('MODELLING')
@@ -449,7 +518,6 @@ HIVModelManager <- R6::R6Class(
             if (!is.null(msg)) {
               PrintAlert(msg, type = 'danger')
             }
-            private$Catalogs$BootstrapFitTask$Stop(force = TRUE)
             private$SendMessage(
               'BOOTSTRAP_RUN_FINISHED',
               payload = list(
@@ -529,16 +597,16 @@ HIVModelManager <- R6::R6Class(
   ),
 
   active = list(
-    Parameters = function(xmlModel) {
-      return(private$Catalogs$Parameters)
-    },
-
     PopCombination = function() {
       return(private$Catalogs$PopCombination)
     },
 
     AggrDataSelection = function() {
       return(private$Catalogs$AggrDataSelection)
+    },
+
+    Years = function() {
+      return(private$Catalogs$Years)
     },
 
     MainFitTask = function() {

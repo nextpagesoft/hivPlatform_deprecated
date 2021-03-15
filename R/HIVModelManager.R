@@ -457,17 +457,19 @@ HIVModelManager <- R6::R6Class(
                   type = msgType
                 )
 
-                if (bootResult$Converged) {
-                  jSucc <- jSucc + 1
-                  progress <- (jSucc - 1 + (i - 1) * bsCount) / (mainCount * bsCount) * 100
-                }
-
                 bootResults[[j]] <- list(
                   Context = bootContext,
                   Data = bootData,
                   Results = bootResult,
-                  RunTime = runTime
+                  RunTime = runTime,
+                  DataSet = imp,
+                  BootIteration = jSucc
                 )
+
+                if (bootResult$Converged) {
+                  jSucc <- jSucc + 1
+                  progress <- (jSucc - 1 + (i - 1) * bsCount) / (mainCount * bsCount) * 100
+                }
               }
 
               fits[[imp]] <- bootResults

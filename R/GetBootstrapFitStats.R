@@ -12,7 +12,10 @@ GetBootstrapFitStats <- function(
   years <- info$ModelMinYear:(info$ModelMaxYear - 1)
 
   mainOutputList <- lapply(succResultsList, '[[', 'MainOutputs')
-  colNames <- colnames(mainOutputList[[1]])
+  colNames <- setdiff(
+    colnames(mainOutputList[[1]]),
+    c('DataSet', 'BootIteration', 'Run', 'Year')
+  )
   mainOutputStats <- setNames(lapply(colNames, function(colName) {
     resultSample <- sapply(mainOutputList, '[[', colName)
     result <- cbind(
@@ -21,8 +24,12 @@ GetBootstrapFitStats <- function(
       Std = apply(resultSample, 1, sd, na.rm = TRUE)
     )
     result <- as.data.table(result)
-    result[, Year := years]
     setnames(result, old = 1:3, new = c('LB', 'Median', 'UB'))
+    result[, ':='(
+      Variable = colName,
+      Year = years
+    )]
+    setcolorder(result, c('Variable', 'Year'))
     return(result)
   }), colNames)
 

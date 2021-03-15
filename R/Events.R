@@ -1,46 +1,148 @@
 CreateDownload <- function(type, format, output, appMgr) {
-  if (type == 'ADJUSTED_DATA') {
-    timeStamp <- appMgr$CaseMgr$LastAdjustmentResult$TimeStamp
-    if (format %in% c('rds')) {
-      data <- appMgr$CaseMgr$LastAdjustmentResult
-    } else {
-      data <- appMgr$CaseMgr$LastAdjustmentResult$Data
+  switch(type,
+    'ADJUSTED_DATA' = {
+      timeStamp <- appMgr$CaseMgr$LastAdjustmentResult$TimeStamp
+      if (format %in% c('rds')) {
+        data <- appMgr$CaseMgr$LastAdjustmentResult
+      } else {
+        data <- appMgr$CaseMgr$LastAdjustmentResult$Data
+      }
+      fileNamePrefix <- 'AdjustedData'
+      outputControlName <- sprintf('downAdjData%s', toupper(format))
+    },
+    'HIV_MAIN_FIT_DETAILED' = {
+      timeStamp <- GetTimeStamp()
+      data <- appMgr$HIVModelMgr$MainFitResult
+      fileNamePrefix <- 'HIVModelMainFitDetailed'
+      outputControlName <- sprintf('downMainFitDetailed%s', toupper(format))
+    },
+    'HIV_MAIN_FIT' = {
+      timeStamp <- GetTimeStamp()
+      data <- rbindlist(lapply(names(appMgr$HIVModelMgr$MainFitResult), function(iter) {
+        dt <- appMgr$HIVModelMgr$MainFitResult[[iter]]$Results$MainOutputs
+        dt[, ':='(
+          Imputation = iter,
+          Run = NULL
+        )]
+        setcolorder(dt, 'Imputation')
+      }))
+      fileNamePrefix <- 'HIVModelMainFit'
+      outputControlName <- sprintf('downMainFit%s', toupper(format))
+    },
+    'HIV_BOOT_FIT_DETAILED' = {
+      timeStamp <- GetTimeStamp()
+      data <- appMgr$HIVModelMgr$BootstrapFitResult
+      fileNamePrefix <- 'HIVModelBootFitDetailed'
+      outputControlName <- sprintf('downBootFitDetailed%s', toupper(format))
+    },
+    'HIV_BOOT_FIT' = {
+      timeStamp <- GetTimeStamp()
+      data <- Filter(
+        function(item) item$Results$Converged,
+        Reduce(c, appMgr$HIVModelMgr$BootstrapFitResult)
+      )
+      data <- rbindlist(lapply(data, function(res) {
+        mainOutputs <- res$Results$MainOutputs
+        mainOutputs[, ':='(
+          DataSet = res$DataSet,
+          BootIteration = res$BootIteration
+        )]
+        return(mainOutputs)
+      }))
+      setcolorder(
+        data,
+        c('DataSet', 'BootIteration')
+      )
+      fileNamePrefix <- 'HIVModelBootFit'
+      outputControlName <- sprintf('downBootFit%s', toupper(format))
+    },
+    'HIV_BOOT_STAT_DETAILED' = {
+      timeStamp <- GetTimeStamp()
+      data <- appMgr$HIVModelMgr$BootstrapFitStats
+      fileNamePrefix <- 'HIVModelBootStatDetailed'
+      outputControlName <- sprintf('downBootStatDetailed%s', toupper(format))
+    },
+    'HIV_BOOT_STAT' = {
+      timeStamp <- GetTimeStamp()
+      data <- rbindlist(appMgr$HIVModelMgr$BootstrapFitStats$MainOutputsStats)
+      fileNamePrefix <- 'HIVModelBootStat'
+      outputControlName <- sprintf('downBootStat%s', toupper(format))
+    },
+    'MAIN_REPORT' = {
+      timeStamp <- GetTimeStamp()
+      data <- appMgr$ReportArtifacts
+      fileNamePrefix <- 'AdjustmentsReport'
+      outputControlName <- sprintf('report%s', toupper(format))
     }
-    fileNamePrefix <- 'AdjustedData'
-    outputControlName <- sprintf('downAdjData%s', toupper(format))
-  } else if (type == 'MAIN_REPORT') {
-    timeStamp <- GetTimeStamp()
-    data <- appMgr$ReportArtifacts
-    fileNamePrefix <- 'AdjustmentsReport'
-    outputControlName <- sprintf('report%s', toupper(format))
-  }
+  )
 
   output[[outputControlName]] <- downloadHandler(
     filename = function() {
-      if (type == 'ADJUSTED_DATE') {
-        sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
-      } else {
-        sprintf('%s_%s.%s', fileNamePrefix, timeStamp, switch(
-          format,
-          'html' = 'html',
-          'pdf' = 'pdf',
-          'latex' = 'zip',
-          'word' = 'docx'
-        ))
-      }
-
+      switch(type,
+        'ADJUSTED_DATA' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'HIV_MAIN_FIT_DETAILED' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'HIV_MAIN_FIT' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'HIV_BOOT_FIT_DETAILED' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'HIV_BOOT_FIT' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'HIV_BOOT_STAT_DETAILED' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'HIV_BOOT_STAT' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'MAIN_REPORT' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, switch(
+            format,
+            'html' = 'html',
+            'pdf' = 'pdf',
+            'latex' = 'zip',
+            'word' = 'docx'
+          ))
+        }
+      )
     },
     content = function(file) {
-      if (type == 'ADJUSTED_DATA') {
-        WriteDataFile(data, file)
-      } else {
-        RenderReportToFile(
-          reportFilePath = GetReportFileNames()['Main Report'],
-          format = sprintf('%s_document', format),
-          params = data,
-          outputFilePath = file
-        )
-      }
+      switch(type,
+        'ADJUSTED_DATA' = {
+          WriteDataFile(data, file)
+        },
+        'HIV_MAIN_FIT_DETAILED' = {
+          WriteDataFile(data, file)
+        },
+        'HIV_MAIN_FIT' = {
+          WriteDataFile(data, file)
+        },
+        'HIV_BOOT_FIT_DETAILED' = {
+          WriteDataFile(data, file)
+        },
+        'HIV_BOOT_FIT' = {
+          WriteDataFile(data, file)
+        },
+        'HIV_BOOT_STAT_DETAILED' = {
+          WriteDataFile(data, file)
+        },
+        'HIV_BOOT_STAT' = {
+          WriteDataFile(data, file)
+        },
+        'MAIN_REPORT' = {
+          RenderReportToFile(
+            reportFilePath = GetReportFileNames()['Main Report'],
+            format = sprintf('%s_document', format),
+            params = data,
+            outputFilePath = file
+          )
+        }
+      )
     }
   )
 }
@@ -215,6 +317,13 @@ Events <- function(
     )
   })
 
+  observeEvent(appMgr$HIVModelMgr$MainFitResult, {
+    CreateDownload('HIV_MAIN_FIT_DETAILED', 'rds', output, appMgr)
+    CreateDownload('HIV_MAIN_FIT', 'csv', output, appMgr)
+    CreateDownload('HIV_MAIN_FIT', 'rds', output, appMgr)
+    CreateDownload('HIV_MAIN_FIT', 'dta', output, appMgr)
+  })
+
   observeEvent(input$runBootstrapBtn, {
     params <- input$runBootstrapBtn
     appMgr$HIVModelMgr$RunBootstrapFit(
@@ -236,4 +345,16 @@ Events <- function(
   observeEvent(input$cancelBootstrapBtn, {
     appMgr$HIVModelMgr$CancelBootstrapFit()
   })
+
+  observeEvent(appMgr$HIVModelMgr$BootstrapFitResult, {
+    CreateDownload('HIV_BOOT_FIT_DETAILED', 'rds', output, appMgr)
+    CreateDownload('HIV_BOOT_FIT', 'csv', output, appMgr)
+    CreateDownload('HIV_BOOT_FIT', 'rds', output, appMgr)
+    CreateDownload('HIV_BOOT_FIT', 'dta', output, appMgr)
+    CreateDownload('HIV_BOOT_STAT_DETAILED', 'rds', output, appMgr)
+    CreateDownload('HIV_BOOT_STAT', 'csv', output, appMgr)
+    CreateDownload('HIV_BOOT_STAT', 'rds', output, appMgr)
+    CreateDownload('HIV_BOOT_STAT', 'dta', output, appMgr)
+  })
+
 }

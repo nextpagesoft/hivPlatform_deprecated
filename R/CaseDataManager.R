@@ -241,7 +241,6 @@ CaseDataManager <- R6::R6Class(
     ) {
       private$Catalogs$Filters <- filters
       PrintAlert('Case-based data filters set')
-      print(filters)
 
       # Update summary plots
       tryCatch({

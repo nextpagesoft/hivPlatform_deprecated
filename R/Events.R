@@ -1,5 +1,11 @@
 CreateDownload <- function(type, format, output, appMgr) {
   switch(type,
+    'APP_MANAGER' = {
+      timeStamp <- GetTimeStamp()
+      data <- appMgr
+      fileNamePrefix <- 'HIVPlatform_State'
+      outputControlName <- 'downState'
+    },
     'ADJUSTED_DATA' = {
       timeStamp <- appMgr$CaseMgr$LastAdjustmentResult$TimeStamp
       if (format %in% c('rds')) {
@@ -79,6 +85,9 @@ CreateDownload <- function(type, format, output, appMgr) {
   output[[outputControlName]] <- downloadHandler(
     filename = function() {
       switch(type,
+        'APP_MANAGER' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
         'ADJUSTED_DATA' = {
           sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
         },
@@ -113,6 +122,9 @@ CreateDownload <- function(type, format, output, appMgr) {
     },
     content = function(file) {
       switch(type,
+        'APP_MANAGER' = {
+          WriteDataFile(data, file)
+        },
         'ADJUSTED_DATA' = {
           WriteDataFile(data, file)
         },
@@ -153,7 +165,6 @@ Events <- function(
   session,
   appMgr
 ) {
-
   observeEvent(input$saveStateBtn, {
     appMgr$SaveState()
   })
@@ -357,4 +368,5 @@ Events <- function(
     CreateDownload('HIV_BOOT_STAT', 'dta', output, appMgr)
   })
 
+  CreateDownload('APP_MANAGER', 'rds', output, appMgr)
 }

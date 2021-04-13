@@ -403,7 +403,7 @@ HIVModelManager <- R6::R6Class(
               if (bsType == 'NON-PARAMETRIC' & !is.null(caseData)) {
                 caseDataImp <- caseData[Imputation == as.integer(imp)]
               } else {
-                caseDataImp <- NULL
+                bootData <- context$Data
               }
 
               jSucc <- 1
@@ -415,11 +415,9 @@ HIVModelManager <- R6::R6Class(
                 # Bootstrap data set
                 if (bsType == 'NON-PARAMETRIC' & !is.null(caseData)) {
                   bootCaseDataImp <- caseDataImp[sample.int(nrow(caseDataImp), replace = TRUE)]
-                } else {
-                  bootCaseDataImp <- NULL
+                  bootData <-
+                    CombineData(bootCaseDataImp, aggrData, popCombination, aggrDataSelection)[[1]]
                 }
-                bootData <-
-                  CombineData(bootCaseDataImp, aggrData, popCombination, aggrDataSelection)[[1]]
 
                 bootContext <- hivModelling::GetRunContext(
                   data = bootData,

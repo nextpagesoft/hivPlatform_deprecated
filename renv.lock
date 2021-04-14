@@ -67,10 +67,10 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "0.10.2.2.0",
+      "Version": "0.10.4.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "8772b10276b4b4a3dfaa5043f9ad94f8"
+      "Hash": "a8df2d4278c6501b2c209f4acc6a3036"
     },
     "RcppEigen": {
       "Package": "RcppEigen",
@@ -339,9 +339,9 @@
       "RemoteUsername": "nextpagesoft",
       "RemoteRepo": "hivModelling",
       "RemoteRef": "HEAD",
-      "RemoteSha": "77f55f839f7a46a40ec7b0b5d346f02eb1f08651",
+      "RemoteSha": "fe17f175d1eedbdfcc6de23a7766a5e321f9d56b",
       "RemoteHost": "api.github.com",
-      "Hash": "28054e7cd4992ef83ff92c8e44656a43"
+      "Hash": "170774220ef99f2b688167c3fb05d8b3"
     },
     "hms": {
       "Package": "hms",
@@ -394,10 +394,10 @@
     },
     "knitr": {
       "Package": "knitr",
-      "Version": "1.31",
+      "Version": "1.32",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c3994c036d19fc22c5e2a209c8298bfb"
+      "Hash": "c9e3c0fffd678c847d9b274c068ca46b"
     },
     "labeling": {
       "Package": "labeling",
@@ -793,10 +793,10 @@
     },
     "viridisLite": {
       "Package": "viridisLite",
-      "Version": "0.3.0",
+      "Version": "0.4.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "ce4f6271baa94776db692f1cb2055bee"
+      "Hash": "55e157e2aa88161bdb0754218470d204"
     },
     "waldo": {
       "Package": "waldo",

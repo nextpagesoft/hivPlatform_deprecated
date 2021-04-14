@@ -4,7 +4,6 @@ ConvertHIVModelParams <- function(
   inputname
 ) {
   intervals <- ConvertListToDt(x$timeIntervals)
-  # intervals[, endYear := NULL]
   setnames(intervals, new = Capitalize(colnames(intervals)))
   setcolorder(intervals, c('StartYear', 'EndYear', 'Jump', 'DiffByCD4', 'ChangeInInterval'))
 

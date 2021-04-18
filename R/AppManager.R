@@ -28,6 +28,7 @@ AppManager <- R6::R6Class(
 
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
+        Seed = NULL,
         CompletedSteps = NULL,
         ReportTask = NULL,
         ReportArtifacts = NULL,
@@ -87,6 +88,24 @@ AppManager <- R6::R6Class(
       }
     },
 
+    SetSeed = function(seed) {
+      private$Catalogs$Seed <- seed
+      set.seed(seed)
+      if (is.null(seed)) {
+        msg <- 'Random seed set to time-based (random) for all subsequent computations'
+      } else {
+        msg <- sprintf('Random seed set to %s for all subsequent computations', seed)
+      }
+      self$SendMessage(
+        'SEED_SET',
+        payload = list(
+          ActionStatus = 'SUCCESS',
+          ActionMessage = msg,
+          Seed = seed
+        )
+      )
+    },
+
     SaveState = function() {
       PrintAlert('Saving state to file - NOT IMPLEMENTED YET')
     },
@@ -111,8 +130,10 @@ AppManager <- R6::R6Class(
         PrintAlert('Starting report task')
 
         private$Catalogs$ReportTask <- Task$new(
-          function(reportSpec, fileName, filters, adjustedData) {
+          function(reportSpec, fileName, filters, adjustedData, randomSeed) {
             suppressMessages(pkgload::load_all())
+            .Random.seed <- randomSeed
+
             reportFilePath <- hivEstimatesAccuracy2::GetReportFileNames()[reportSpec$name]
             params <- modifyList(
               reportSpec,
@@ -144,7 +165,8 @@ AppManager <- R6::R6Class(
             reportSpec = reportSpec,
             fileName = private$CaseMgrPriv$FileName,
             filters = private$CaseMgrPriv$Filters,
-            adjustedData = private$CaseMgrPriv$AdjustmentResult
+            adjustedData = private$CaseMgrPriv$AdjustmentResult,
+            randomSeed = .Random.seed
           ),
           session = private$Session,
           successCallback = function(result) {
@@ -246,6 +268,10 @@ AppManager <- R6::R6Class(
 
     CompletedSteps = function() {
       return(private$Catalogs$CompletedSteps)
+    },
+
+    Seed = function() {
+      return(private$Catalogs$Seed)
     },
 
     ReportTask = function() {

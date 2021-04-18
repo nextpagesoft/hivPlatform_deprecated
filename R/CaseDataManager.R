@@ -332,9 +332,10 @@ CaseDataManager <- R6::R6Class(
 
         if (nrow(data)) {
           private$Catalogs$AdjustmentTask <- Task$new(
-            function(data, adjustmentSpecs) {
+            function(data, adjustmentSpecs, randomSeed) {
               suppressMessages(pkgload::load_all())
               options(width = 120)
+              .Random.seed <- randomSeed
 
               result <- hivEstimatesAccuracy2::RunAdjustments(
                 data = data,
@@ -346,7 +347,11 @@ CaseDataManager <- R6::R6Class(
 
               return(result)
             },
-            args = list(data = data, adjustmentSpecs = adjustmentSpecs),
+            args = list(
+              data = data,
+              adjustmentSpecs = adjustmentSpecs,
+              randomSeed = .Random.seed
+            ),
             session = private$Session,
             successCallback = function(result) {
               private$Catalogs$AdjustmentResult <- result

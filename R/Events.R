@@ -369,4 +369,8 @@ Events <- function(
   })
 
   CreateDownload('APP_MANAGER', 'rds', output, appMgr)
+
+  observeEvent(input$seed, {
+    appMgr$SetSeed(input$seed)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
 }

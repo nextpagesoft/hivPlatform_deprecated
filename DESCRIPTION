@@ -1,15 +1,13 @@
 Package: hivEstimatesAccuracy2
 Type: Package
 Title: Improves Accuracy of HIV Estimates in EU/EEA Countries
-Version: 1.9.54
-Date: 2021-04-14
+Version: 1.9.55
+Date: 2021-04-18
 Authors@R: c(person('Magdalena', 'Rosinska', email = 'mrosinska@pzh.gov.pl',
     role = c('aut', 'cph')), person('Nikos', 'Pantazis', email =
-    'npantaz@med.uoa.gr', role = c('aut')), person('Daniel', 'Lewandowski',
-    email = 'daniel@nextpagesoft.net', role = c('aut', 'cre')),
-    person('Janusz', 'Janiec', email = 'jjaniec@pzh.gov.pl', role = c('aut',
-    'ctb')), person('Chantal', 'Quinten', email = 'chantal.quinten@ecdc.europa.eu', role = c('aut',
-    'ctb')))
+    'npantaz@med.uoa.gr', role = c('aut')), person('Ard', 'van Sighem',
+    email = 'a.i.vansighem@amsterdamumc.nl', role = c('aut')), person('Daniel',
+    'Lewandowski', email = 'daniel@nextpagesoft.net', role = c('aut', 'cre')))
 Maintainer: Daniel Lewandowski <daniel@nextpagesoft.net>
 Description: Improves the accuracy of HIV estimates in EU/EEA countries.
 License: file LICENSE

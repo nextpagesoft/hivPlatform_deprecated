@@ -138,7 +138,6 @@ HIVModelManager <- R6::R6Class(
     ) {
       private$Catalogs$AggrDataSelection <- aggrFilters
       PrintAlert('Aggregated data filters set')
-      print(aggrFilters)
 
       self$DetermineYearRanges()
     },
@@ -169,10 +168,12 @@ HIVModelManager <- R6::R6Class(
             settings,
             parameters,
             popCombination,
-            aggrDataSelection
+            aggrDataSelection,
+            randomSeed
           ) {
             suppressMessages(pkgload::load_all())
             options(width = 120)
+            .Random.seed <- randomSeed
 
             PrintH1('Parameters')
 
@@ -270,7 +271,8 @@ HIVModelManager <- R6::R6Class(
             settings = settings,
             parameters = parameters,
             popCombination = popCombination,
-            aggrDataSelection = private$Catalogs$AggrDataSelection
+            aggrDataSelection = private$Catalogs$AggrDataSelection,
+            randomSeed = .Random.seed
           ),
           session = private$Session,
           successCallback = function(result) {
@@ -372,10 +374,12 @@ HIVModelManager <- R6::R6Class(
             caseData,
             aggrData,
             popCombination,
-            aggrDataSelection
+            aggrDataSelection,
+            randomSeed
           ) {
             suppressMessages(pkgload::load_all())
             options(width = 120)
+            .Random.seed <- randomSeed
 
             mainCount <- length(mainFitResult)
             fits <- list()
@@ -493,7 +497,8 @@ HIVModelManager <- R6::R6Class(
             caseData = isolate(private$AppMgr$CaseMgr$Data),
             aggrData = isolate(private$AppMgr$AggrMgr$Data),
             popCombination = isolate(private$Catalogs$PopCombination),
-            aggrDataSelection = isolate(private$Catalogs$AggrDataSelection)
+            aggrDataSelection = isolate(private$Catalogs$AggrDataSelection),
+            randomSeed = .Random.seed
           ),
           session = private$Session,
           successCallback = function(result) {

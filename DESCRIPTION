@@ -1,8 +1,8 @@
 Package: hivEstimatesAccuracy2
 Type: Package
 Title: Improves Accuracy of HIV Estimates in EU/EEA Countries
-Version: 1.9.55
-Date: 2021-04-18
+Version: 1.9.56
+Date: 2021-04-19
 Authors@R: c(person('Magdalena', 'Rosinska', email = 'mrosinska@pzh.gov.pl',
     role = c('aut', 'cph')), person('Nikos', 'Pantazis', email =
     'npantaz@med.uoa.gr', role = c('aut')), person('Ard', 'van Sighem',
@@ -25,6 +25,7 @@ Imports:
     knitr (>= 1.28),
     mice (>= 3.8.0),
     mitools (>= 2.4),
+    openxlsx (>= 4.2.3),
     pkgload (>= 1.0.2),
     quantreg (>= 5.54),
     prettyunits (>= 1.1.1),

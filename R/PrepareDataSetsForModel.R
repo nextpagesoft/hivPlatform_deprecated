@@ -31,16 +31,23 @@ PrepareDataSetsForModel <- function(
 
   WorkFunc <- function(dt) {
     dt[is.na(DateOfFirstCD4Count), DateOfFirstCD4Count := DateOfHIVDiagnosis]
-    dt[, ':=' (
+    dt[, ':='(
       CD4Category = sprintf('HIV_CD4_%d', findInterval(FirstCD4Count, c(0, 200, 350, 500, Inf))),
       HIVToAIDSDaysCount = as.integer(DateOfAIDSDiagnosis - DateOfHIVDiagnosis),
       HIVToFirstCD4DaysCount = as.integer(DateOfFirstCD4Count - DateOfHIVDiagnosis),
       YearOfAIDSDiagnosis = year(DateOfAIDSDiagnosis),
       YearOfDeath = year(DateOfDeath)
     )]
+    if (!('Weight' %in% colnames(dt))) {
+      dt[, Weight := 1]
+    }
 
     # HIV file
-    hiv <- dt[!is.na(YearOfHIVDiagnosis), .(Count = .N), keyby = c('YearOfHIVDiagnosis', strata)]
+    hiv <- dt[
+      !is.na(YearOfHIVDiagnosis),
+      .(Count = sum(Weight)),
+      keyby = c('YearOfHIVDiagnosis', strata)
+    ]
     setnames(hiv, old = c('YearOfHIVDiagnosis'), new = c('Year'))
     if (length(strata) > 0) {
       hiv <- dcast(
@@ -53,7 +60,7 @@ PrepareDataSetsForModel <- function(
     # AIDS file
     aids <- dt[
       !is.na(YearOfAIDSDiagnosis),
-      .(Count = .N),
+      .(Count = sum(Weight)),
       keyby = c('YearOfAIDSDiagnosis', strata)
     ]
     setnames(aids, old = c('YearOfAIDSDiagnosis'), new = c('Year'))
@@ -68,7 +75,7 @@ PrepareDataSetsForModel <- function(
     # HIVAIDS file
     hivAids <- dt[
       !is.na(YearOfHIVDiagnosis) & HIVToAIDSDaysCount <= 90,
-      .(Count = .N),
+      .(Count = sum(Weight)),
       keyby = c('YearOfHIVDiagnosis', strata)
     ]
     setnames(hivAids, old = c('YearOfHIVDiagnosis'), new = c('Year'))
@@ -87,7 +94,7 @@ PrepareDataSetsForModel <- function(
       sorted = TRUE
     )
     cd4 <- lapply(cd4, function(d) {
-      d <- d[, .(Count = .N), keyby = c('YearOfHIVDiagnosis', strata)]
+      d <- d[, .(Count = sum(Weight)), keyby = c('YearOfHIVDiagnosis', strata)]
       setnames(d, old = c('YearOfHIVDiagnosis'), new = c('Year'))
       if (length(strata) > 0) {
         d <- dcast(
@@ -108,7 +115,7 @@ PrepareDataSetsForModel <- function(
     }
 
     # Dead file
-    dead <- dt[!is.na(YearOfDeath), .(Count = .N), keyby = c('YearOfDeath', strata)]
+    dead <- dt[!is.na(YearOfDeath), .(Count = sum(Weight)), keyby = c('YearOfDeath', strata)]
     setnames(dead, old = c('YearOfDeath'), new = c('Year'))
     if (length(strata) > 0) {
       dead <- dcast(

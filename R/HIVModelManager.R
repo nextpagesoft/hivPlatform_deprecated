@@ -173,7 +173,7 @@ HIVModelManager <- R6::R6Class(
           ) {
             suppressMessages(pkgload::load_all())
             options(width = 120)
-            .Random.seed <- randomSeed
+            .Random.seed <- randomSeed # nolint
 
             PrintH1('Parameters')
 
@@ -379,7 +379,7 @@ HIVModelManager <- R6::R6Class(
           ) {
             suppressMessages(pkgload::load_all())
             options(width = 120)
-            .Random.seed <- randomSeed
+            .Random.seed <- randomSeed # nolint
 
             mainCount <- length(mainFitResult)
             fits <- list()

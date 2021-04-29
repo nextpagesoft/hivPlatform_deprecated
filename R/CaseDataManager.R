@@ -335,7 +335,7 @@ CaseDataManager <- R6::R6Class(
             function(data, adjustmentSpecs, randomSeed) {
               suppressMessages(pkgload::load_all())
               options(width = 120)
-              .Random.seed <- randomSeed
+              .Random.seed <- randomSeed # nolint
 
               result <- hivEstimatesAccuracy2::RunAdjustments(
                 data = data,
@@ -363,7 +363,8 @@ CaseDataManager <- R6::R6Class(
                 payload = list(
                   ActionStatus = 'SUCCESS',
                   ActionMessage = 'Running adjustment task finished',
-                  AdjustmentsReport = self$AdjustmentsReport
+                  AdjustmentsReport = self$AdjustmentsReport,
+                  RunAdjustmentsTypes = unname(sapply(adjustmentSpecs, '[[', 'Type'))
                 )
               )
             },

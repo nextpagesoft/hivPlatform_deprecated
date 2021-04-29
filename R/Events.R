@@ -1,13 +1,11 @@
 CreateDownload <- function(type, format, output, appMgr) {
   switch(type,
     'APP_MANAGER' = {
-      timeStamp <- GetTimeStamp()
       data <- appMgr
       fileNamePrefix <- 'HIVPlatform_State'
       outputControlName <- 'downState'
     },
     'ADJUSTED_DATA' = {
-      timeStamp <- appMgr$CaseMgr$LastAdjustmentResult$TimeStamp
       if (format %in% c('rds')) {
         data <- appMgr$CaseMgr$LastAdjustmentResult
       } else {
@@ -16,14 +14,17 @@ CreateDownload <- function(type, format, output, appMgr) {
       fileNamePrefix <- 'AdjustedData'
       outputControlName <- sprintf('downAdjData%s', toupper(format))
     },
+    'REP_DEL_DATA' = {
+      data <- appMgr$CaseMgr$LastAdjustmentResult$Artifacts$RdDistribution
+      fileNamePrefix <- 'RepDelayData'
+      outputControlName <- sprintf('downRepDelData%s', toupper(format))
+    },
     'HIV_MAIN_FIT_DETAILED' = {
-      timeStamp <- GetTimeStamp()
       data <- appMgr$HIVModelMgr$MainFitResult
       fileNamePrefix <- 'HIVModelMainFitDetailed'
       outputControlName <- sprintf('downMainFitDetailed%s', toupper(format))
     },
     'HIV_MAIN_FIT' = {
-      timeStamp <- GetTimeStamp()
       data <- rbindlist(lapply(names(appMgr$HIVModelMgr$MainFitResult), function(iter) {
         dt <- appMgr$HIVModelMgr$MainFitResult[[iter]]$Results$MainOutputs
         dt[, ':='(
@@ -36,13 +37,11 @@ CreateDownload <- function(type, format, output, appMgr) {
       outputControlName <- sprintf('downMainFit%s', toupper(format))
     },
     'HIV_BOOT_FIT_DETAILED' = {
-      timeStamp <- GetTimeStamp()
       data <- appMgr$HIVModelMgr$BootstrapFitResult
       fileNamePrefix <- 'HIVModelBootFitDetailed'
       outputControlName <- sprintf('downBootFitDetailed%s', toupper(format))
     },
     'HIV_BOOT_FIT' = {
-      timeStamp <- GetTimeStamp()
       data <- Filter(
         function(item) item$Results$Converged,
         Reduce(c, appMgr$HIVModelMgr$BootstrapFitResult)
@@ -63,19 +62,16 @@ CreateDownload <- function(type, format, output, appMgr) {
       outputControlName <- sprintf('downBootFit%s', toupper(format))
     },
     'HIV_BOOT_STAT_DETAILED' = {
-      timeStamp <- GetTimeStamp()
       data <- appMgr$HIVModelMgr$BootstrapFitStats
       fileNamePrefix <- 'HIVModelBootStatDetailed'
       outputControlName <- sprintf('downBootStatDetailed%s', toupper(format))
     },
     'HIV_BOOT_STAT' = {
-      timeStamp <- GetTimeStamp()
       data <- rbindlist(appMgr$HIVModelMgr$BootstrapFitStats$MainOutputsStats)
       fileNamePrefix <- 'HIVModelBootStat'
       outputControlName <- sprintf('downBootStat%s', toupper(format))
     },
     'MAIN_REPORT' = {
-      timeStamp <- GetTimeStamp()
       data <- appMgr$ReportArtifacts
       fileNamePrefix <- 'AdjustmentsReport'
       outputControlName <- sprintf('report%s', toupper(format))
@@ -84,11 +80,15 @@ CreateDownload <- function(type, format, output, appMgr) {
 
   output[[outputControlName]] <- downloadHandler(
     filename = function() {
+      timeStamp <- GetTimeStamp()
       switch(type,
         'APP_MANAGER' = {
           sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
         },
         'ADJUSTED_DATA' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
+        'REP_DEL_DATA' = {
           sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
         },
         'HIV_MAIN_FIT_DETAILED' = {
@@ -126,6 +126,9 @@ CreateDownload <- function(type, format, output, appMgr) {
           WriteDataFile(data, file)
         },
         'ADJUSTED_DATA' = {
+          WriteDataFile(data, file)
+        },
+        'REP_DEL_DATA' = {
           WriteDataFile(data, file)
         },
         'HIV_MAIN_FIT_DETAILED' = {
@@ -261,6 +264,12 @@ Events <- function(
     CreateDownload('ADJUSTED_DATA', 'csv', output, appMgr)
     CreateDownload('ADJUSTED_DATA', 'rds', output, appMgr)
     CreateDownload('ADJUSTED_DATA', 'dta', output, appMgr)
+  })
+
+  observeEvent(appMgr$CaseMgr$LastAdjustmentResult$Artifacts$RdDistribution, {
+    CreateDownload('REP_DEL_DATA', 'csv', output, appMgr)
+    CreateDownload('REP_DEL_DATA', 'rds', output, appMgr)
+    CreateDownload('REP_DEL_DATA', 'dta', output, appMgr)
   })
 
   observeEvent(input$createReportBtn, {

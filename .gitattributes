@@ -4,3 +4,5 @@
 *.RDS -text diff
 *.png -text diff
 *.zip -text diff
+*.xlsx -text diff
+*.xlsm -text diff

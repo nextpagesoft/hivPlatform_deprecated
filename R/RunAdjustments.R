@@ -60,7 +60,7 @@ RunAdjustments <- function(
     cat('\n')
 
     startTime <- Sys.time()
-    PrintAlert('Start time: {startTime}')
+    PrintAlert('Start time: {format(startTime)}')
 
     # Extract parameters for better visibility.
     parameters <- GetParamInfoFromAdjustSpec(adjustmentSpec$Parameters, infoType = 'value')
@@ -108,7 +108,7 @@ RunAdjustments <- function(
     endTime <- Sys.time()
     cat('\n')
     PrintH2('Done')
-    PrintAlert('End time: {endTime}')
+    PrintAlert('End time: {format(endTime)}')
     PrintAlert('Elapsed time: {.timestamp {prettyunits::pretty_dt(endTime - startTime)}}')
   }
 

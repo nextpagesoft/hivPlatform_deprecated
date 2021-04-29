@@ -50,7 +50,5 @@ GetHIVPlotData <- function(
     }
   }
 
-  jsonDt <- jsonlite::toJSON(dt, dataframe = 'columns')
-
-  return(jsonDt)
+  return(dt)
 }

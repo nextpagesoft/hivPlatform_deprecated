@@ -6,11 +6,7 @@ CreateDownload <- function(type, format, output, appMgr) {
       outputControlName <- 'downState'
     },
     'ADJUSTED_DATA' = {
-      if (format %in% c('rds')) {
-        data <- appMgr$CaseMgr$LastAdjustmentResult
-      } else {
-        data <- appMgr$CaseMgr$LastAdjustmentResult$Data
-      }
+      data <- appMgr$CaseMgr$LastAdjustmentResult$Data
       fileNamePrefix <- 'AdjustedData'
       outputControlName <- sprintf('downAdjData%s', toupper(format))
     },
@@ -35,6 +31,21 @@ CreateDownload <- function(type, format, output, appMgr) {
       }))
       fileNamePrefix <- 'HIVModelMainFit'
       outputControlName <- sprintf('downMainFit%s', toupper(format))
+    },
+    'HIV_MAIN_FIT_EXCEL' = {
+      data <- appMgr$HIVModelMgr$PlotData
+      fileNamePrefix <- 'HIVModel_Charts'
+      outputControlName <- sprintf('downFit%s', toupper(format))
+      if (toupper(format) == 'XLSM') {
+        template <- GetSystemFile('templates', 'Charts.xlsm')
+      } else {
+        template <- GetSystemFile('templates', 'Charts_withoutMacro.xlsx')
+      }
+    },
+    'HIV_MAIN_FIT_EXCEL_NO_MACRO' = {
+      data <- appMgr$HIVModelMgr$PlotData
+      fileNamePrefix <- 'HIVModel_Charts'
+      outputControlName <- sprintf('downFit%s', toupper(format))
     },
     'HIV_BOOT_FIT_DETAILED' = {
       data <- appMgr$HIVModelMgr$BootstrapFitResult
@@ -97,6 +108,9 @@ CreateDownload <- function(type, format, output, appMgr) {
         'HIV_MAIN_FIT' = {
           sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
         },
+        'HIV_MAIN_FIT_EXCEL' = {
+          sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
+        },
         'HIV_BOOT_FIT_DETAILED' = {
           sprintf('%s_%s.%s', fileNamePrefix, timeStamp, format)
         },
@@ -136,6 +150,9 @@ CreateDownload <- function(type, format, output, appMgr) {
         },
         'HIV_MAIN_FIT' = {
           WriteDataFile(data, file)
+        },
+        'HIV_MAIN_FIT_EXCEL' = {
+          WriteExcelFile(data, file, 'DATA', template)
         },
         'HIV_BOOT_FIT_DETAILED' = {
           WriteDataFile(data, file)
@@ -342,6 +359,8 @@ Events <- function(
     CreateDownload('HIV_MAIN_FIT', 'csv', output, appMgr)
     CreateDownload('HIV_MAIN_FIT', 'rds', output, appMgr)
     CreateDownload('HIV_MAIN_FIT', 'dta', output, appMgr)
+    CreateDownload('HIV_MAIN_FIT_EXCEL', 'xlsm', output, appMgr)
+    CreateDownload('HIV_MAIN_FIT_EXCEL', 'xlsx', output, appMgr)
   })
 
   observeEvent(input$runBootstrapBtn, {

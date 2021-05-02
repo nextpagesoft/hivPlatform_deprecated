@@ -4,12 +4,12 @@
 \alias{GetSystemFile}
 \title{GetSystemFile}
 \usage{
-GetSystemFile(..., package = "hivEstimatesAccuracy2")
+GetSystemFile(..., package = "hivPlatform")
 }
 \arguments{
 \item{...}{Arguments for \code{\link{system.file}}}
 
-\item{package}{Package name. Default = \code{'hivEstimatesAccuracy2'}.}
+\item{package}{Package name. Default = \code{'hivPlatform'}.}
 }
 \value{
 Path to a system file

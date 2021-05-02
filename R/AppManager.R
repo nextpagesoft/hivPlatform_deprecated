@@ -132,16 +132,16 @@ AppManager <- R6::R6Class(
         private$Catalogs$ReportTask <- Task$new(
           function(reportSpec, fileName, filters, adjustedData, randomSeed) {
             suppressMessages(pkgload::load_all())
-            .Random.seed <- randomSeed
+            .Random.seed <- randomSeed #nolint
 
-            reportFilePath <- hivEstimatesAccuracy2::GetReportFileNames()[reportSpec$name]
+            reportFilePath <- hivPlatform::GetReportFileNames()[reportSpec$name]
             params <- modifyList(
               reportSpec,
               list(
                 AdjustedData = adjustedData
               )
             )
-            params <- hivEstimatesAccuracy2::GetMainReportArtifacts(params)
+            params <- hivPlatform::GetMainReportArtifacts(params)
             params <- modifyList(
               params,
               list(
@@ -152,7 +152,7 @@ AppManager <- R6::R6Class(
                   )
               )
             )
-            report <- hivEstimatesAccuracy2::RenderReportToHTML(reportFilePath, params)
+            report <- hivPlatform::RenderReportToHTML(reportFilePath, params)
 
             result <- list(
               Artifacts = params,

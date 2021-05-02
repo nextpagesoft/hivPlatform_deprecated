@@ -1,7 +1,7 @@
 external.libraries:
-ignored.packages: rsconnect
+ignored.packages: testthat
 package.dependency.fields: Imports, LinkingTo, Depends
 r.version:
-snapshot.type: packrat
+snapshot.type: implicit
 use.cache: TRUE
 vcs.ignore.library: TRUE

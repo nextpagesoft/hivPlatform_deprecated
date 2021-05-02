@@ -15,7 +15,7 @@ Character vector of adjustment specification file paths.
 }
 \description{
 Get the list of adjustment file names in a specific folder. By default the search folder is
-\code{adjustments} folder installed with package \code{\link{hivEstimatesAccuracy2}}.
+\code{adjustments} folder installed with package \code{\link{hivPlatform}}.
 }
 \examples{
 \dontrun{

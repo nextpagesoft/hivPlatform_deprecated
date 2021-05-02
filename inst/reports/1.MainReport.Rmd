@@ -63,7 +63,7 @@ params:
 
 ```{r setup, eval = TRUE, include = FALSE}
 
-IsEmptyString <- hivEstimatesAccuracy2::IsEmptyString
+IsEmptyString <- hivPlatform::IsEmptyString
 
 knitr::opts_chunk$set(
   echo = FALSE,

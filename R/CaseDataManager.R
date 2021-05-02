@@ -337,7 +337,7 @@ CaseDataManager <- R6::R6Class(
               options(width = 120)
               .Random.seed <- randomSeed # nolint
 
-              result <- hivEstimatesAccuracy2::RunAdjustments(
+              result <- hivPlatform::RunAdjustments(
                 data = data,
                 adjustmentSpecs = adjustmentSpecs,
                 diagYearRange = NULL,

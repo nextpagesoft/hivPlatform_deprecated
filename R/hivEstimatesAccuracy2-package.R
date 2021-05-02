@@ -1,6 +1,6 @@
 #' @docType package
 #'
-#' @name hivEstimatesAccuracy2
+#' @name hivPlatform
 #'
 #' @title
 #' Improving Accuracy of HIV Estimates in EU/EEA Countries
@@ -16,7 +16,8 @@
 #'
 #' @importFrom grDevices dev.control dev.off hcl pdf recordPlot
 #' @importFrom grid grid.newpage grid.layout viewport pushViewport
-#' @importFrom stats setNames lowess quantile sd var acf glm poisson as.formula coef coefficients vcov runif
+#' @importFrom stats setNames lowess quantile sd var acf glm poisson as.formula coef coefficients
+#'   vcov runif
 #' @importFrom utils adist head modifyList tail unzip zip
 #' @importFrom tools file_path_sans_ext
 #' @import shiny

@@ -1,7 +1,7 @@
 #' GetReportFileNames
 #'
 #' Get the list of report file names in a specific folder. By default the search folder is
-#' \code{reports} folder installed with package \code{\link{hivEstimatesAccuracy2}}.
+#' \code{reports} folder installed with package \code{\link{hivPlatform}}.
 #'
 #' @param path Path to the folder with adjustment specifications. Optional.
 #'   Default = \code{\link{GetSystemFile}('reports')}.

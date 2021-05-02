@@ -15,7 +15,7 @@ Character vector of adjustment specification file paths.
 }
 \description{
 Get the list of report file names in a specific folder. By default the search folder is
-\code{reports} folder installed with package \code{\link{hivEstimatesAccuracy2}}.
+\code{reports} folder installed with package \code{\link{hivPlatform}}.
 }
 \examples{
 \dontrun{

@@ -48,7 +48,5 @@ AppServer <- function(
   )
   session$sendCustomMessage('apiURL', list(url = apiURL))
 
-  session$onSessionEnded(stopApp)
-
   return(invisible(NULL))
 }

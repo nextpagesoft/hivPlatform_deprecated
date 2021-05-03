@@ -74,8 +74,7 @@ CaseDataManager <- R6::R6Class(
       },
       error = function(e) {
         status <<- 'FAIL'
-        msg <<-
-          'There was a difficulty encountered when reading the data file. It has not been loaded.'
+        msg <<- e$message
       })
 
       if (status == 'SUCCESS') {

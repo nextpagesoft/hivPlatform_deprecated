@@ -6,13 +6,16 @@
 \usage{
 RunApp(
   launchBrowser = getOption("shiny.launch.browser", interactive()),
-  trace = FALSE
+  trace = FALSE,
+  port = 3306
 )
 }
 \arguments{
 \item{launchBrowser}{Logical indicating to open the app in a newly open web browser}
 
 \item{trace}{Logical indicating to output detailed debug info in R session}
+
+\item{port}{Port}
 }
 \value{
 NULL (invisibly)

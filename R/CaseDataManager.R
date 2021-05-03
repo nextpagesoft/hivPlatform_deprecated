@@ -23,6 +23,7 @@ CaseDataManager <- R6::R6Class(
       private$Session <- session
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
+        FilePath = NULL,
         FileName = NULL,
         OriginalData = NULL,
         AttrMapping = NULL,
@@ -47,7 +48,8 @@ CaseDataManager <- R6::R6Class(
 
     # 1. Read case-based data ----------------------------------------------------------------------
     ReadData = function(
-      fileName
+      filePath,
+      fileName = NULL
     ) {
       if (!is.null(private$AppMgr) && !is.element(
         private$AppMgr$Steps['SESSION_INITIALIZED'],
@@ -60,10 +62,13 @@ CaseDataManager <- R6::R6Class(
         return(invisible(self))
       }
 
+      if (is.null(fileName)) {
+        fileName <- basename(filePath)
+      }
       status <- 'SUCCESS'
       msg <- 'Data read correctly'
       tryCatch({
-        originalData <- ReadDataFile(fileName)
+        originalData <- ReadDataFile(filePath)
         attrMapping <- GetPreliminaryAttributesMapping(originalData)
         attrMappingStatus <- GetAttrMappingStatus(attrMapping)
       },
@@ -74,6 +79,7 @@ CaseDataManager <- R6::R6Class(
       })
 
       if (status == 'SUCCESS') {
+        private$Catalogs$FilePath <- filePath
         private$Catalogs$FileName <- fileName
         private$Catalogs$OriginalData <- originalData
         private$Catalogs$AttrMapping <- attrMapping
@@ -485,6 +491,10 @@ CaseDataManager <- R6::R6Class(
   ),
 
   active = list(
+    FilePath = function() {
+      return(private$Catalogs$FilePath)
+    },
+
     FileName = function() {
       return(private$Catalogs$FileName)
     },

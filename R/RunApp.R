@@ -21,6 +21,7 @@ RunApp <- function(
 ) {
   options(shiny.maxRequestSize = 100 * 1024^2)
   options(shiny.trace = trace)
+
   app <- shiny::shinyApp(
     AppUI,
     AppServer,

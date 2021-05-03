@@ -34,12 +34,14 @@ output:
     highlight: null
     citation_package: default
     number_sections: yes
+    fig_crop: no
   pdf_document:
     toc: yes
     template: default
     highlight: null
     citation_package: default
-    number_sections: yes
+    number_sections: no
+    fig_crop: no
   word_document:
     reference_docx: ./resources/template_ECDC.docx
     fig_width: 7

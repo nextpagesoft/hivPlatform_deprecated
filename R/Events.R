@@ -203,7 +203,10 @@ Events <- function(
         FilePath = fileInfo$datapath[1]
       )
     )
-    appMgr$CaseMgr$ReadData(fileInfo$datapath)
+    appMgr$CaseMgr$ReadData(
+      fileInfo$datapath,
+      fileInfo$name[1]
+    )
   })
 
   observeEvent(input$aggrUploadBtn, {

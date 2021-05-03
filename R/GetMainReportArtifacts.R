@@ -964,7 +964,8 @@ GetMainReportArtifacts <- function(
         DataMITransCD4Message = dataMITransCD4List[["Message"]],
         DataMIMigrCountMessage = dataMIMigrCountList[["Message"]],
         DataMIMigrCD4Message = dataMIMigrCD4List[["Message"]],
-        TblRd = tblRd)
+        TblRd = tblRd
       )
     )
+  )
 }

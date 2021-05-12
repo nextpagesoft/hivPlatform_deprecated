@@ -172,7 +172,7 @@ list(
 
       # Extract results of univariable analysis (whether particular covariates
       # are associated with RD)
-      univAnalysis <- rbindlist(lapply(
+      univAnalysis <- try(rbindlist(lapply(
         univModels,
         function(x) {
           y <- summary(x)
@@ -203,7 +203,11 @@ list(
           res <- cbind(Predictor = predictor, res)
           return(res)
         }
-      ))
+      )), silent = TRUE)
+
+      if (IsError(univAnalysis)) {
+        univAnalysis <- data.table()
+      }
 
       # --------------------------------------------------------------------------------------------
       # RD estimation without time trend

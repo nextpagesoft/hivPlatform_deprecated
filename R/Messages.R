@@ -127,17 +127,17 @@ CollapseTexts <- function(
   return(paste(list(...), collapse = collapse))
 }
 
-capture_messages <- function(expr) {
+CaptureMessages <- function(expr) {
   msgs <- character()
   i <- 0
   suppressMessages(withCallingHandlers(
     expr,
     message = function(e) msgs[[i <<- i + 1]] <<- conditionMessage(e)
   ))
-  paste0(msgs, collapse = "")
+  paste0(msgs, collapse = '')
 }
 
-capt0 <- function(expr, strip_style = FALSE) {
-  out <- capture_messages(expr)
-  if (strip_style) cli::ansi_strip(out) else out
+capt0 <- function(expr, stripStyle = FALSE) {
+  out <- CaptureMessages(expr)
+  if (stripStyle) cli::ansi_strip(out) else out
 }

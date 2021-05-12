@@ -362,12 +362,12 @@ CaseDataManager <- R6::R6Class(
               private$Catalogs$AdjustmentResult <- result
               private$Catalogs$AdjustedData <- copy(self$LastAdjustmentResult$Data)
               private$InvalidateAfterStep('CASE_BASED_ADJUSTMENTS')
-              PrintAlert('Running adjustment task finished')
+              PrintAlert('Adjustment task finished')
               private$SendMessage(
                 'ADJUSTMENTS_RUN_FINISHED',
                 payload = list(
                   ActionStatus = 'SUCCESS',
-                  ActionMessage = 'Running adjustment task finished',
+                  ActionMessage = 'Adjustment task finished',
                   AdjustmentsReport = self$AdjustmentsReport,
                   RunAdjustmentsTypes = unname(sapply(adjustmentSpecs, '[[', 'Type'))
                 )
@@ -377,12 +377,12 @@ CaseDataManager <- R6::R6Class(
               if (!is.null(msg)) {
                 PrintAlert(msg, type = 'danger')
               }
-              PrintAlert('Running adjustment task failed', type = 'danger')
+              PrintAlert('Adjustment task failed', type = 'danger')
               private$SendMessage(
                 'ADJUSTMENTS_RUN_FINISHED',
                 payload = list(
                   ActionStatus = 'FAIL',
-                  ActionMessage = 'Running adjustment task failed'
+                  ActionMessage = 'Adjustment task failed'
                 )
               )
             }
@@ -391,7 +391,7 @@ CaseDataManager <- R6::R6Class(
             'ADJUSTMENTS_RUN_STARTED',
             payload = list(
               ActionStatus = 'SUCCESS',
-              ActionMessage = 'Running adjustment task started'
+              ActionMessage = 'Adjustment task started'
             )
           )
         }
@@ -401,7 +401,7 @@ CaseDataManager <- R6::R6Class(
           'ADJUSTMENTS_RUN_STARTED',
           payload = list(
             ActionStatus = 'FAIL',
-            ActionMessage = 'Running adjustment task failed'
+            ActionMessage = 'Adjustment task failed'
           )
         )
         print(e)

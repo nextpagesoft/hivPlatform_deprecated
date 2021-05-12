@@ -32,7 +32,10 @@ PrepareDataSetsForModel <- function(
   WorkFunc <- function(dt) {
     dt[is.na(DateOfFirstCD4Count), DateOfFirstCD4Count := DateOfHIVDiagnosis]
     dt[, ':='(
-      CD4Category = sprintf('HIV_CD4_%d', findInterval(FirstCD4Count, c(0, 200, 350, 500, Inf))),
+      CD4Category = sprintf(
+        'HIV_CD4_%d',
+        5 - findInterval(FirstCD4Count, c(0, 200, 350, 500, Inf))
+      ),
       HIVToAIDSDaysCount = as.integer(DateOfAIDSDiagnosis - DateOfHIVDiagnosis),
       HIVToFirstCD4DaysCount = as.integer(DateOfFirstCD4Count - DateOfHIVDiagnosis),
       YearOfAIDSDiagnosis = year(DateOfAIDSDiagnosis),
@@ -74,7 +77,7 @@ PrepareDataSetsForModel <- function(
 
     # HIVAIDS file
     hivAids <- dt[
-      !is.na(YearOfHIVDiagnosis) & HIVToAIDSDaysCount <= 90,
+      !is.na(YearOfHIVDiagnosis) & !is.na(HIVToAIDSDaysCount) & HIVToAIDSDaysCount <= 90,
       .(Count = sum(Weight)),
       keyby = c('YearOfHIVDiagnosis', strata)
     ]
@@ -89,7 +92,12 @@ PrepareDataSetsForModel <- function(
 
     # CD4 files
     cd4 <- split(
-      dt[!is.na(FirstCD4Count) & HIVToFirstCD4DaysCount <= 90 & HIVToAIDSDaysCount > 90],
+      dt[
+        !is.na(YearOfHIVDiagnosis) &
+          !is.na(FirstCD4Count) &
+          HIVToFirstCD4DaysCount <= 90 &
+          (is.na(HIVToAIDSDaysCount) | HIVToAIDSDaysCount > 90)
+      ],
       by = 'CD4Category',
       sorted = TRUE
     )

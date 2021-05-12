@@ -184,7 +184,10 @@ Task <- R6::R6Class(
             } else if (
               private$Catalogs$Status == 'FAIL' && is.function(private$FailCallback)
             ) {
-              private$FailCallback(private$Catalogs$FailMessage)
+              failMsg <- private$Catalogs$FailMessage
+              errorMsg <- CollapseTexts('Adjustment task failed:', failMsg, collapse = '\n')
+              private$AddToRunLog(errorMsg)
+              private$FailCallback(failMsg)
             }
             o$destroy()
           }
@@ -212,7 +215,10 @@ Task <- R6::R6Class(
       } else if (
         status == 'FAIL' && is.function(private$FailCallback)
       ) {
-        private$FailCallback(isolate(private$Catalogs$FailMessage))
+        failMsg <- private$Catalogs$FailMessage
+        errorMsg <- CollapseTexts('Adjustment task failed:', failMsg, collapse = '\n')
+        private$AddToRunLog(errorMsg)
+        private$FailCallback(failMsg)
       }
       return(invisible(self))
     }

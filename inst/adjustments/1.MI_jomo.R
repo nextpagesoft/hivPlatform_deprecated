@@ -104,7 +104,7 @@ list(
 
       # Create splines with proper names and intercept
       splineBasisMatrix <- try(as.data.table(splines::ns(dataSet$DY, df = nsdf)), silent = TRUE)
-      if (inherits(splineBasisMatrix, 'try-error')) {
+      if (IsError(splineBasisMatrix)) {
         splineBasisMatrix <- data.table()
       } else {
         setnames(splineBasisMatrix, paste0('SplineKnot.', colnames(splineBasisMatrix)))

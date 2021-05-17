@@ -106,10 +106,11 @@ CombineData <- function(
         all = TRUE,
         suffixes = c('.CaseBased', '.Aggregated')
       )
-      result <- result[,
-        .(Count = na.zero(Count.CaseBased) + na.zero(Count.Aggregated)),
-        keyby = .(Year)
-      ]
+      result[, ':='(
+        Count = ifelse(!is.na(Count.CaseBased), Count.CaseBased, Count.Aggregated),
+        Count.CaseBased = NULL,
+        Count.Aggregated = NULL
+      )]
     }), allDataNames)
     return(finalSet)
   }

@@ -13,9 +13,10 @@
 #' GetTimeStamp(timeZone = "GMT")
 #'
 #' @export
-GetTimeStamp <- function(timeZone = Sys.timezone())
-{
-  timeStamp <- format(Sys.time(), "%Y%m%d%H%M%S", tz = timeZone)
+GetTimeStamp <- function(
+  timeZone = Sys.timezone()
+) {
+  timeStamp <- format(Sys.time(), "%Y%m%d_%H%M%S", tz = timeZone)
 
   return(timeStamp)
 }

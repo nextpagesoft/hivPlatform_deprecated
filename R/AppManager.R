@@ -25,6 +25,7 @@ AppManager <- R6::R6Class(
       private$CaseMgrPriv <- CaseDataManager$new(session, self)
       private$AggrMgrPriv <- AggrDataManager$new(session, self)
       private$HIVModelMgrPriv <- HIVModelManager$new(session, self)
+      private$UIStatePriv <- NULL
 
       catalogStorage <- ifelse(!is.null(session), shiny::reactiveValues, list)
       private$Catalogs <- catalogStorage(
@@ -106,8 +107,25 @@ AppManager <- R6::R6Class(
       )
     },
 
+    SetUIState = function(uiState) {
+      private$UIStatePriv <- uiState
+    },
+
     SaveState = function() {
-      PrintAlert('Saving state to file - NOT IMPLEMENTED YET')
+      rc <- rawConnection(raw(0), 'r+')
+      saveRDS(self, rc)
+      rcData <- rawConnectionValue(rc)
+      close(rc)
+      self$SendMessage(
+        'SAVE_STATE',
+        payload = list(
+          ActionStatus = 'SUCCESS',
+          ActionMessage = 'Application state available for saving',
+          Data = rcData,
+          FileName = sprintf('HIVPlatformState_%s.rds', GetTimeStamp())
+        )
+      )
+      PrintAlert('Saving state to file')
     },
 
     # USER ACTIONS =================================================================================
@@ -240,6 +258,9 @@ AppManager <- R6::R6Class(
     # Shiny session
     Session = NULL,
 
+    # UI state (JSON)
+    UIStatePriv = NULL,
+
     # Case-based data manager
     CaseMgrPriv = NULL,
 
@@ -254,6 +275,10 @@ AppManager <- R6::R6Class(
   ),
 
   active = list(
+    UIState = function() {
+      return(private$UIStatePriv)
+    },
+
     CaseMgr = function() {
       return(private$CaseMgrPriv)
     },

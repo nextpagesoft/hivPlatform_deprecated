@@ -56,8 +56,7 @@ AggrDataManager <- R6::R6Class(
         data <- hivModelling::ReadInputData(fileName)
         dataNames <- names(data)
         dataYears <- lapply(data, '[[', 'Year')
-        dataTypesGroupings <- c('^Dead$', '^AIDS$', '^(HIV|HIVAIDS)$', '^HIV_CD4_[1-4]{1}$')
-        dataFiles <- lapply(dataTypesGroupings, function(grouping) {
+        dataFiles <- lapply(dataNames, function(grouping) {
           names <- grep(grouping, dataNames, value = TRUE)
           years <- dataYears[names]
           minYear <- min(sapply(years, min))

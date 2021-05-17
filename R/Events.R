@@ -186,6 +186,7 @@ Events <- function(
   appMgr
 ) {
   observeEvent(input$saveStateBtn, {
+    appMgr$SetUIState(input$saveStateBtn)
     appMgr$SaveState()
   })
 

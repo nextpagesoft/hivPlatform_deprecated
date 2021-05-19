@@ -1,0 +1,67 @@
+"bFE"
+"consc",26.9347971679298
+"Cobstime",-0.509775110377355
+"I(Male * consc)",-1.01783747428309
+"I(Europe * consc)",1.90709484987043
+"I(Asia * consc)",0.542970792709605
+"I(Unknown * consc)",1.59335205587945
+"I(IDU * consc)",0.544775843202075
+"I(MSW * consc)",-0.459673162516852
+"I(expo_Other * consc)",-0.660850968513792
+"I(age_seroSpl1 * consc)",-0.0318768781651426
+"I(age_seroSpl2 * consc)",-0.0198405111127003
+"I(age_seroSpl3 * consc)",-0.0487014606156214
+"I(age_seroSpl4 * consc)",-0.0292492418365235
+"lspline(I(calendar * consc), knots = c(16, 22))1",-0.16256919528501
+"lspline(I(calendar * consc), knots = c(16, 22))2",-0.106544535170124
+"lspline(I(calendar * consc), knots = c(16, 22))3",0.019959085158575
+"I(Male * Cobstime)",0.130992437254335
+"I(Europe * Cobstime)",-0.337108956920344
+"I(Asia * Cobstime)",-0.213124404951103
+"I(Unknown * Cobstime)",-0.605171857744538
+"I(IDU * Cobstime)",-0.184014455266259
+"I(MSW * Cobstime)",0.038135020097167
+"I(expo_Other * Cobstime)",0.130949041453128
+"I(age_seroSpl1 * Cobstime)",-0.0178450022985079
+"I(age_seroSpl2 * Cobstime)",-0.0160249398726852
+"I(age_seroSpl3 * Cobstime)",-0.00543098501371463
+"I(age_seroSpl4 * Cobstime)",-0.00786441560742595
+"consr",3.32770392994655
+"Robstime",0.041255089496407
+"I(Male * consr)",0.334003633989481
+"I(Europe * consr)",-0.0603033883882598
+"I(Asia * consr)",-0.0939861133428239
+"I(Unknown * consr)",-0.0663532962591293
+"I(IDU * consr)",-0.00254882295933033
+"I(MSW * consr)",-0.107201001224853
+"I(expo_Other * consr)",-0.146089940541813
+"I(age_seroSpl1 * consr)",0.00188064052452083
+"I(age_seroSpl2 * consr)",0.00378370390975749
+"I(age_seroSpl3 * consr)",0.0071524006833585
+"I(age_seroSpl4 * consr)",0.00647075460573993
+"RlogObstime2",-0.164112142529066
+"lspline(I(calendar * consr), knots = c(16, 22))1",0.0275064013689785
+"lspline(I(calendar * consr), knots = c(16, 22))2",0.0173126340079991
+"lspline(I(calendar * consr), knots = c(16, 22))3",0.00516201550387183
+"I(Male * Robstime)",-0.0213043743255877
+"I(Europe * Robstime)",0.0423805068346072
+"I(Asia * Robstime)",0.050368263867519
+"I(Unknown * Robstime)",0.108423162755423
+"I(IDU * Robstime)",0.0337769831678902
+"I(MSW * Robstime)",0.0109967164788568
+"I(expo_Other * Robstime)",0.000650757412887127
+"I(age_seroSpl1 * Robstime)",0.00289696522160654
+"I(age_seroSpl2 * Robstime)",0.00125351653205073
+"I(age_seroSpl3 * Robstime)",0.00179060203194762
+"I(age_seroSpl4 * Robstime)",-0.000786232991175482
+"I(Male * RlogObstime2)",-0.00896123129688215
+"I(Europe * RlogObstime2)",-0.00626194332950197
+"I(Asia * RlogObstime2)",-0.00220008317785447
+"I(Unknown * RlogObstime2)",-0.0878615475622651
+"I(IDU * RlogObstime2)",-0.166796262394787
+"I(MSW * RlogObstime2)",-0.0152158764676464
+"I(expo_Other * RlogObstime2)",-0.0470222552743672
+"I(age_seroSpl1 * RlogObstime2)",-0.00284555369431077
+"I(age_seroSpl2 * RlogObstime2)",0.000686426503964721
+"I(age_seroSpl3 * RlogObstime2)",-0.00351639000429044
+"I(age_seroSpl4 * RlogObstime2)",-0.000236572436459476

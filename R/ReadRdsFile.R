@@ -13,8 +13,10 @@
 #' }
 #'
 #' @export
-ReadRdsFile <- function(fileName, ...)
-{
+ReadRdsFile <- function(
+  fileName,
+  ...
+) {
   stopifnot(!missing(fileName))
 
   data <- readRDS(file = fileName, ...)

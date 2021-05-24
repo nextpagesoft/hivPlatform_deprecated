@@ -35,11 +35,14 @@ PrepareMigrantData <- function(
   # Region of origin
   regionMapping <- data.table(
     FullRegionOfOrigin = c(
-      'CENTEUR', 'EASTEUR', 'WESTEUR', 'EUROPE', 'NORTHAM', 'NORTHAFRMIDEAST', 'SUBAFR',
+      'CENTEUR', 'EASTEUR', 'WESTEUR', 'EUROPE', 'NORTHAM',
+      'NORTHAFRMIDEAST', 'SUBAFR',
       'SOUTHASIA', 'EASTASIAPAC'
     ),
     GroupedRegion = c(
-      'Europe', 'Europe', 'Europe', 'Europe', 'Europe', 'Africa', 'Africa', 'Asia', 'Asia'
+      'Europe', 'Europe', 'Europe', 'Europe', 'Europe',
+      'Africa', 'Africa',
+      'Asia', 'Asia'
     )
   )
   adjDataMigr[

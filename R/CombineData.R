@@ -106,8 +106,15 @@ CombineData <- function(
         all = TRUE,
         suffixes = c('.CaseBased', '.Aggregated')
       )
+
+      if (nrow(set2[[dataName]]) > 0) {
+        yearsSeq <- set2[[dataName]][, seq(min(Year), max(Year))]
+      } else {
+        yearsSeq <- integer()
+      }
+
       result[, ':='(
-        Count = ifelse(!is.na(Count.CaseBased), Count.CaseBased, Count.Aggregated),
+        Count = ifelse(Year %in% yearsSeq, Count.Aggregated, Count.CaseBased),
         Count.CaseBased = NULL,
         Count.Aggregated = NULL
       )]

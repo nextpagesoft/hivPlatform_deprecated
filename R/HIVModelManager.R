@@ -94,6 +94,7 @@ HIVModelManager <- R6::R6Class(
         aggrDataSelection <- private$Catalogs$AggrDataSelection
 
         dataSets <- CombineData(caseData, aggrData, popCombination, aggrDataSelection)[[1]]
+        dataSets <- Filter(function(dt) nrow(dt) > 0, dataSets)
         optimalYears <- hivModelling::GetAllowedYearRanges(dataSets)
         rangeYears <- lapply(dataSets, function(dt) dt[, c(min(Year), max(Year))])
 

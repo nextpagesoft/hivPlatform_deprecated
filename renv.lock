@@ -228,10 +228,10 @@
     },
     "fansi": {
       "Package": "fansi",
-      "Version": "0.4.2",
+      "Version": "0.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "fea074fb67fe4c25d47ad09087da847d"
+      "Hash": "d447b40982c576a72b779f0a3b3da227"
     },
     "farver": {
       "Package": "farver",
@@ -312,15 +312,15 @@
     },
     "hivModelling": {
       "Package": "hivModelling",
-      "Version": "0.9.23",
+      "Version": "0.9.24",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteUsername": "nextpagesoft",
       "RemoteRepo": "hivModelling",
       "RemoteRef": "HEAD",
-      "RemoteSha": "18b1ed66bdcd200160fb2223b839212004d81416",
+      "RemoteSha": "ec65585e8386858fc18345706bd13c968952cf3f",
       "RemoteHost": "api.github.com",
-      "Hash": "251144676cafa932f02074bee598baae"
+      "Hash": "7493cef0dcf3071bf2b9b5230ea4dff1"
     },
     "hms": {
       "Package": "hms",
@@ -723,10 +723,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.31",
+      "Version": "0.32",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "25b572f764f3c19fef9aac33b5724f3d"
+      "Hash": "db9a6f2cf147751322d22c9f6647c7bd"
     },
     "ucminf": {
       "Package": "ucminf",

@@ -35,7 +35,7 @@ GetMissingnessPlots <- function(
   missData[, c(columnNames) := lapply(.SD, IsMissing), .SDcols = columnNames]
 
   allStat <- missData[, lapply(.SD, GetRelFreq), .SDcols = columnNames]
-  colOrder <- order(allStat, decreasing = TRUE)
+  colOrder <- order(as.matrix(allStat), decreasing = TRUE)
   chartCategories <- labels[colOrder]
   labels <- labels[colOrder]
   columnNames <- columnNames[colOrder]

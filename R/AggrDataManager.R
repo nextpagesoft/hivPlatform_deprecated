@@ -54,15 +54,15 @@ AggrDataManager <- R6::R6Class(
       msg <- 'Data read correctly'
       tryCatch({
         data <- hivModelling::ReadInputData(fileName)
-        dataNames <- names(data)
         dataYears <- lapply(data, '[[', 'Year')
+        dataNames <- names(data)
         dataTypesGroupings <- c('^Dead$', '^AIDS$', '^(HIV|HIVAIDS)$', '^HIV_CD4_[1-4]{1}$')
         dataFiles <- lapply(dataTypesGroupings, function(grouping) {
           names <- grep(grouping, dataNames, value = TRUE)
-          years <- dataYears[names]
+          years <- Filter(function(x) length(x) > 0, dataYears[names])
           if (length(years) > 0) {
-            minYear <- min(sapply(years, min))
-            maxYear <- max(sapply(years, max))
+            minYear <- min(sapply(years, min, na.rm = TRUE))
+            maxYear <- max(sapply(years, max, na.rm = TRUE))
             return(list(
               name = paste(names, collapse = ', '),
               use = TRUE,
@@ -73,8 +73,11 @@ AggrDataManager <- R6::R6Class(
           }
         })
         dataFiles <- Filter(Negate(is.null), dataFiles)
-        rangeYears <- c(min(sapply(dataYears, min)), max(sapply(dataYears, max)))
-        populationNames <- names(data[[1]])[-1]
+        dataRangeYears <- sapply(dataFiles, '[[', 'years')
+        if (is.matrix(dataRangeYears)) {
+          rangeYears <- c(min(dataRangeYears), max(dataRangeYears))
+          populationNames <- names(data[[1]])[-1]
+        }
       },
       error = function(e) {
         status <<- 'FAIL'

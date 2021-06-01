@@ -1,47 +1,182 @@
-PredictInfCD4VL <- function(baseCD4VL) {
-  # In the biomarkers dataset VL measurements should be first
+# data <- PrepareMigrantData()
+PredictInfCD4VL <- function(
+  baseCD4VL,
+  bFE,
+  sigma2,
+  varCovRE
+) {
   set.seed(10)
 
   baseCD4VL[, Ord := seq_len(.N), by = .(Id)]
 
   # Get the design matrices
   x <- split(
-    baseCD4VL[, .(Id, Gender, GroupedRegion, Mode, AgeDiag, DateOfExam, Calendar, Consc, Consr)],
+    baseCD4VL[, .(Id, Gender, GroupedRegion, Mode, AgeDiag, DTime, Calendar, Consc, Consr)],
     by = c('Id'),
     keep.by = FALSE
   )
 
   z <- split(
-    baseCD4VL[, .(Id, Consc, CobsTime, Consr, RobsTime, RLogObsTime2, DateOfExam)],
+    baseCD4VL[, .(Id, Consc, CobsTime, Consr, RobsTime, RLogObsTime2, DTime)],
     by = c('Id'),
     keep.by = FALSE
   )
 
+  y <- split(baseCD4VL[, .(Id, YVar)], by = c('Id'), keep.by = FALSE)
 
-  z <- lapply(split(
-    baseCD4VL[, c("consc", "Cobstime", "consr", "Robstime", "RlogObstime2", "dtime")],
-    baseCD4VL$id
-  ), function(x) as.matrix(x))
-  y <- split(baseCD4VL$yvar, baseCD4VL$id)
-  u <- split(baseCD4VL$u, baseCD4VL$id)
-  ids <- unique(baseCD4VL$id)
-  only <- split(baseCD4VL$only, baseCD4VL$id)
-  mig <- split(baseCD4VL$mig, baseCD4VL$id)
-  known <- split(baseCD4VL$KnownPrePost, baseCD4VL$id)
+  u <- split(baseCD4VL[, .(Id, U)], by = c('Id'), keep.by = FALSE)
 
+  ids <- unique(baseCD4VL$Id)
+  only <- split(baseCD4VL[, .(Id, Only)], by = c('Id'), keep.by = FALSE)
+  mig <- split(baseCD4VL[, .(Id, Mig)], by = c('Id'), keep.by = FALSE)
+  known <- split(baseCD4VL[, .(Id, KnownPrePost)], by = c('Id'), keep.by = FALSE)
 
   # One row per subject
-  baseCD4VL.id <- baseCD4VL[baseCD4VL$ord == 1, ]
+  baseCD4VLId <- baseCD4VL[Ord == 1]
 
-
-  xaids <- cbind(1, baseCD4VL.id$gender == "Male", baseCD4VL.id$ageDiag)
-  maxdtime <- tapply(baseCD4VL$dtime, baseCD4VL$id, max)
-  G <- length(unique(ids))
-  ind = list()
-  for (i in 1:G) {
-    ind[[i]] = which(baseCD4VL$id == ids[i])
+  xAIDS <- cbind(
+    1,
+    as.integer(baseCD4VLId$Gender == 'Male'),
+    baseCD4VLId$AgeDiag
+  )
+  maxDTime <- baseCD4VL[, .(DTime = max(DTime)), by = .(Id)]
+  ind <- list()
+  for (i in seq_along(unique(ids))) {
+    ind[[i]] <- which(baseCD4VL$Id == ids[i])
   }
 
-  baseCD4VL$ProbPre = NA
+  baseCD4VL[, ProbPre := NA]
+
+  for (i in seq_along(unique(ids))) {
+    upTime <- u[[i]][1, U]
+    migTime <- mig[[i]][1, Mig]
+
+    if (known[[i]][1, KnownPrePost] != 'Unknown') {
+      next
+    }
+
+    if (only[[i]][1, Only] == 'Both') {
+      fit1 <- try(integrate(
+        VPostW,
+        lower = migTime,
+        upper = upTime,
+        x = x[[i]],
+        y = y[[i]],
+        z = z[[i]],
+        xAIDS = xAIDS[i, ],
+        maxDTime = maxDTime[Id == i, DTime],
+        betaAIDS = betaAIDS,
+        bFE,
+        sigma2,
+        varCovRE
+      ), silent = TRUE)
+      fit2 <- try(integrate(
+        VPostW,
+        lower = 0,
+        upper = upTime,
+        x = x[[i]],
+        y = y[[i]],
+        z = z[[i]],
+        xAIDS = xAIDS[i, ],
+        maxDTime = maxDTime[Id == i, DTime],
+        betaAIDS = betaAIDS,
+        bFE,
+        sigma2,
+        varCovRE
+      ), silent = TRUE)
+
+      if (IsError(fit1) || IsError(fit2)) {
+        next
+      } else {
+        res <- fit1$value / fit2$value
+      }
+
+      if (fit1$message == 'OK' && fit2$message == 'OK') {
+        baseCD4VL[ind[[i]], ProbPre := res]
+      }
+    }
+
+    if (only[[i]][1, Only] == 'CD4 only') {
+      fit1 <- try(integrate(
+        VPostWCD4,
+        lower = migTime,
+        upper = upTime,
+        x = x[[i]],
+        y = y[[i]],
+        z = z[[i]],
+        xAIDS = xAIDS[i, ],
+        maxDTime = maxDTime[Id == i, DTime],
+        betaAIDS = betaAIDS,
+        bFECD4,
+        sigma2CD4,
+        varCovRECD4
+      ), silent = TRUE)
+      fit2 <- try(integrate(
+        VPostWCD4,
+        lower = 0,
+        upper = upTime,
+        x = x[[i]],
+        y = y[[i]],
+        z = z[[i]],
+        xAIDS = xAIDS[i, ],
+        maxDTime = maxDTime[Id == i, DTime],
+        betaAIDS = betaAIDS,
+        bFECD4,
+        sigma2CD4,
+        varCovRECD4
+      ), silent = TRUE)
+
+      if (IsError(fit1) || IsError(fit2)) {
+        next
+      } else {
+        res <- fit1$value / fit2$value
+      }
+
+      if (fit1$message == 'OK' && fit2$message == 'OK') {
+        baseCD4VL[ind[[i]], ProbPre := res]
+      }
+    }
+
+    if (only[[i]][1] == 'VL only') {
+      fit1 <- try(integrate(
+        VPostWVL,
+        lower = migTime,
+        upper = upTime,
+        x = x[[i]],
+        y = y[[i]],
+        z = z[[i]],
+        xAIDS = xAIDS[i, ],
+        maxDTime = maxDTime[Id == i, DTime],
+        betaAIDS = betaAIDS,
+        bFEVL,
+        sigma2VL,
+        varCovREVL
+      ), silent = TRUE)
+      fit2 <- try(integrate(
+        VPostWVL,
+        lower = 0,
+        upper = upTime,
+        x = x[[i]],
+        y = y[[i]],
+        z = z[[i]],
+        xAIDS = xAIDS[i, ],
+        maxDTime = maxDTime[Id == i, DTime],
+        betaAIDS = betaAIDS,
+        bFEVL,
+        sigma2VL,
+        varCovREVL
+      ), silent = TRUE)
+
+      if (IsError(fit1) || IsError(fit2)) {
+        next
+      } else {
+        res <- fit1$value / fit2$value
+      }
+
+      if (fit1$message == 'OK' && fit2$message == 'OK') {
+        baseCD4VL[ind[[i]], ProbPre := res]
+      }
+    }
+  }
 
 }

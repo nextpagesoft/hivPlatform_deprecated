@@ -267,10 +267,6 @@ Events <- function(
     appMgr$CaseMgr$CancelAdjustments()
   })
 
-  observeEvent(input$aggrFilters, {
-    appMgr$HIVModelMgr$SetAggrFilters(input$aggrFilters)
-  }, ignoreInit = TRUE)
-
   observeEvent(appMgr$CaseMgr$AdjustmentTask$HTMLRunLog, {
     appMgr$SendMessage(
       'ADJUSTMENTS_RUN_LOG_SET',
@@ -280,6 +276,30 @@ Events <- function(
       )
     )
   })
+
+  observeEvent(input$runMigrantBtn, {
+    appMgr$CaseMgr$RunMigration()
+  })
+
+  observeEvent(input$cancelMigrantBtn, {
+    appMgr$CaseMgr$CancelMigration()
+  })
+
+  observeEvent(appMgr$CaseMgr$MigrationTask$HTMLRunLog, {
+    appMgr$SendMessage(
+      'MIGRATION_RUN_LOG_SET',
+      payload = list(
+        ActionStatus = 'SUCCESS',
+        RunLog = appMgr$CaseMgr$MigrationTask$HTMLRunLog
+      )
+    )
+  })
+
+  observeEvent(input$aggrFilters, {
+      appMgr$HIVModelMgr$SetAggrFilters(input$aggrFilters)
+    },
+    ignoreInit = TRUE
+  )
 
   observeEvent(appMgr$CaseMgr$LastAdjustmentResult, {
     CreateDownload('ADJUSTED_DATA', 'csv', output, appMgr)

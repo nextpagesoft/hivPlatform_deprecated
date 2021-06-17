@@ -64,6 +64,7 @@ AppManager <- R6::R6Class(
       'CASE_BASED_ORIGIN_GROUPING' = 4L,
       'CASE_BASED_SUMMARY' = 5L,
       'CASE_BASED_ADJUSTMENTS' = 6L,
+      'CASE_BASED_MIGRATION' = 7L,
       'REPORTS' = 7L,
       'OUTPUTS' = 8L,
       'AGGR_READ' = 9L,

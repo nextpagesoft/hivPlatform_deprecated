@@ -36,7 +36,9 @@ CaseDataManager <- R6::R6Class(
         PreProcessedDataStatus = NULL,
         AdjustedData = NULL,
         AdjustmentTask = NULL,
-        AdjustmentResult = NULL
+        AdjustmentResult = NULL,
+        MigrationTask = NULL,
+        MigrationResult = NULL
       )
     },
 
@@ -335,7 +337,7 @@ CaseDataManager <- R6::R6Class(
           data <- data[is.na(NotificationTime) | NotificationTime %between% notifQuarterRange]
         }
 
-        if (nrow(data)) {
+        if (nrow(data) > 0) {
           private$Catalogs$AdjustmentTask <- Task$new(
             function(data, adjustmentSpecs, randomSeed) {
               suppressMessages(pkgload::load_all())
@@ -425,6 +427,118 @@ CaseDataManager <- R6::R6Class(
       }
 
       return(invisible(self))
+    },
+
+    # 7. Migration ---------------------------------------------------------------------------------
+    RunMigration = function(
+      params = GetMigrantParams()
+    ) {
+      if (!is.null(private$AppMgr) && !is.element(
+        private$AppMgr$Steps['CASE_BASED_ORIGIN_GROUPING'],
+        private$AppMgr$CompletedSteps
+      )) {
+        PrintAlert(
+          'Origing grouping must be applied before running migration',
+          type = 'danger'
+        )
+        return(invisible(self))
+      }
+
+      tryCatch({
+        PrintAlert('Starting migration task')
+
+        data <- copy(self$Data)
+
+        if (nrow(data) > 0) {
+          private$Catalogs$MigrationTask <- Task$new(
+            function(data, params, randomSeed) {
+              suppressMessages(pkgload::load_all())
+              options(width = 120)
+              .Random.seed <- randomSeed # nolint
+
+              input <- hivPlatform::PrepareMigrantData(data)
+              output <- hivPlatform::PredictInf(input, params)
+
+              result <- list(
+                Input = input,
+                Output = output
+              )
+
+              return(result)
+            },
+            args = list(
+              data = data,
+              params = params,
+              randomSeed = .Random.seed
+            ),
+            session = private$Session,
+            successCallback = function(result) {
+              private$Catalogs$MigrationResult <- result
+              try({
+                self$Data[result$Output, ProbPre := i.ProbPre, on = .(Imputation, RecordId)]
+              }, silent = TRUE)
+              private$InvalidateAfterStep('CASE_BASED_MIGRATION')
+              PrintAlert('Migration task finished')
+              private$SendMessage(
+                'MIGRATION_RUN_FINISHED',
+                payload = list(
+                  ActionStatus = 'SUCCESS',
+                  ActionMessage = 'Migration task finished'
+                )
+              )
+            },
+            failCallback = function(msg = NULL) {
+              if (!is.null(msg)) {
+                PrintAlert(msg, type = 'danger')
+              }
+              PrintAlert('Migration task failed', type = 'danger')
+              private$SendMessage(
+                'MIGRATION_RUN_FINISHED',
+                payload = list(
+                  ActionStatus = 'FAIL',
+                  ActionMessage = 'Migration task failed'
+                )
+              )
+            }
+          )
+          private$SendMessage(
+            'MIGRATION_RUN_STARTED',
+            payload = list(
+              ActionStatus = 'SUCCESS',
+              ActionMessage = 'Migration task started'
+            )
+          )
+        }
+      },
+      error = function(e) {
+        private$SendMessage(
+          'MIGRATION_RUN_STARTED',
+          payload = list(
+            ActionStatus = 'FAIL',
+            ActionMessage = 'Migration task failed'
+          )
+        )
+        print(e)
+      })
+
+      return(invisible(self))
+    },
+
+    # 8. Cancel migration --------------------------------------------------------------------------
+    CancelMigration = function() {
+      if (!is.null(private$Catalogs$MigrationTask)) {
+        private$Catalogs$MigrationTask$Stop()
+
+        private$SendMessage(
+          'MIGRATION_RUN_CANCELLED',
+          payload = list(
+            ActionStatus = 'SUCCESS',
+            ActionMessage = 'Running migration task cancelled'
+          )
+        )
+      }
+
+      return(invisible(self))
     }
   ),
 
@@ -456,9 +570,8 @@ CaseDataManager <- R6::R6Class(
         private$Catalogs$AdjustedData <- NULL
         private$Catalogs$AdjustmentTask <- NULL
         private$Catalogs$AdjustmentResult <- NULL
-        if ('GroupedRegionOfOrigin' %in% colnames(private$Catalogs$PreProcessedData$Table)) {
-          private$Catalogs$PreProcessedData$Table[, GroupedRegionOfOrigin := NULL]
-        }
+        private$Catalogs$MigrationTask <- NULL
+        private$Catalogs$MigrationResult <- NULL
       }
 
       if (
@@ -468,9 +581,8 @@ CaseDataManager <- R6::R6Class(
         private$Catalogs$AdjustedData <- NULL
         private$Catalogs$AdjustmentTask <- NULL
         private$Catalogs$AdjustmentResult <- NULL
-        if ('GroupedRegionOfOrigin' %in% colnames(private$Catalogs$PreProcessedData$Table)) {
-          private$Catalogs$PreProcessedData$Table[, GroupedRegionOfOrigin := NULL]
-        }
+        private$Catalogs$MigrationTask <- NULL
+        private$Catalogs$MigrationResult <- NULL
       }
 
       if (
@@ -479,6 +591,8 @@ CaseDataManager <- R6::R6Class(
         private$Catalogs$AdjustedData <- NULL
         private$Catalogs$AdjustmentTask <- NULL
         private$Catalogs$AdjustmentResult <- NULL
+        private$Catalogs$MigrationTask <- NULL
+        private$Catalogs$MigrationResult <- NULL
       }
 
       if (!is.null(private$AppMgr)) {
@@ -565,6 +679,14 @@ CaseDataManager <- R6::R6Class(
         report <- paste(report, private$Catalogs$AdjustmentResult[[i]]$Report)
       }
       return(report)
+    },
+
+    MigrationTask = function() {
+      return(private$Catalogs$MigrationTask)
+    },
+
+    MigrationResult = function() {
+      return(private$Catalogs$MigrationResult)
     },
 
     Data = function() {

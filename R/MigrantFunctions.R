@@ -6,6 +6,7 @@ LogPostW <- function(
   xAIDS,
   maxDTime,
   betaAIDS,
+  kappa,
   bFE,
   sigma2,
   varCovRE
@@ -24,7 +25,7 @@ LogPostW <- function(
     I(DTime + w) * Gender +
       I(DTime + w) * GroupedRegion +
       I(DTime + w) * Mode +
-      I(DTime + w) * lspline::lspline(I(AgeDiag - w), knots = c(25, 35, 45)) +
+      I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
   )
   xCD4 <- model.matrix(fxCD4, data = cbind(y, x)[Consc == 1])
@@ -36,11 +37,11 @@ LogPostW <- function(
     I(DTime + w) * Gender +
       I(DTime + w) * GroupedRegion +
       I(DTime + w) * Mode +
-      I(DTime + w) * lspline::lspline(I(AgeDiag - w), knots = c(25, 35, 45)) +
+      I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       I(log(DTime + w + 0.013)) * Gender +
       I(log(DTime + w + 0.013)) * GroupedRegion +
       I(log(DTime + w + 0.013)) * Mode +
-      I(log(DTime + w + 0.013)) * lspline::lspline(I(AgeDiag - w), knots = c(25, 35, 45)) +
+      I(log(DTime + w + 0.013)) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
   )
   xVR <- model.matrix(fxVR, data = cbind(y, x)[Consr == 1])
@@ -78,12 +79,13 @@ LogPostWCD4 <- function(
   xAIDS,
   maxDTime,
   betaAIDS,
-  bFECD4,
-  sigma2CD4,
-  varCovRECD4
+  kappa,
+  bFE,
+  sigma2,
+  varCovRE
 ) {
   xAIDS[3] <- xAIDS[3] - w
-  lambda <- exp(xAIDS %*% betaAIDS)
+  lambda <- exp(xAIDS %*% betaAIDS)[1, 1]
 
   # Formula for design matrix of fixed effects
   fxCD4 <- formula(
@@ -91,7 +93,7 @@ LogPostWCD4 <- function(
       I(DTime + w) * Gender +
       I(DTime + w) * GroupedRegion +
       I(DTime + w) * Mode +
-      I(DTime + w) * lspline::lspline(I(AgeDiag - w), knots = c(25, 35, 45)) +
+      I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
   )
   x <- model.matrix(fxCD4, data = cbind(y, x))
@@ -101,8 +103,8 @@ LogPostWCD4 <- function(
   z <- model.matrix(fz, data = cbind(y, z))
 
   # Mean and variance of the normal kernel
-  mu <- c(x %*% bFECD4)
-  var <- z %*% tcrossprod(varCovRECD4, z) + sigma2CD4 * diag(length(x[, 1]))
+  mu <- c(x %*% bFE)
+  var <- z %*% tcrossprod(varCovRE, z) + sigma2 * diag(length(x[, 1]))
 
   p <- mvnfast::dmvn(y$YVar, mu = mu, sigma = var, log = TRUE) - lambda * (w + maxDTime)^kappa
 
@@ -117,9 +119,10 @@ LogPostWVL <- function(
   xAIDS,
   maxDTime,
   betaAIDS,
-  bFECVL,
-  sigma2VL,
-  varCovREVL
+  kappa,
+  bFE,
+  sigma2,
+  varCovRE
 ) {
   # Design matrix of the time-to-AIDS model
   xAIDS[3] <- xAIDS[3] - w
@@ -131,11 +134,11 @@ LogPostWVL <- function(
     I(DTime + w) * Gender +
       I(DTime + w) * GroupedRegion +
       I(DTime + w) * Mode +
-      I(DTime + w) * lspline::lspline(I(AgeDiag - w), knots = c(25, 35, 45)) +
+      I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       I(log(DTime + w + 0.013)) * Gender +
       I(log(DTime + w + 0.013)) * GroupedRegion +
-      I(log(DTime + w + 0.013)) * Mode +
-      I(log(DTime + w + 0.013)) * lspline::lspline(I(AgeDiag - w), knots = c(25, 35, 45)) +
+      I(log(DTime + w + 0.013)) * Transmission +
+      I(log(DTime + w + 0.013)) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
   )
 
@@ -146,12 +149,26 @@ LogPostWVL <- function(
   z <- model.matrix(fz, data = cbind(y, z))
 
   # Mean and variance of the normal kernel
-  mu <- c(x %*% bFEVL)
-  var <- z %*% tcrossprod(varCovREVL, z) + sigma2VL * diag(length(x[, 1]))
+  mu <- c(x %*% bFE)
+  var <- z %*% tcrossprod(varCovRE, z) + sigma2 * diag(length(x[, 1]))
 
   p <- mvnfast::dmvn(y$YVar, mu = mu, sigma = var, log = TRUE) - lambda * (w + maxDTime)^kappa
 
   return(-p)
+}
+
+LogPostWAIDS <- function(
+  w,
+  x,
+  dTime,
+  betaAIDS,
+  kappa
+) {
+  x[3] <- x[3] - w
+  lambda <- exp(x %*% betaAIDS)[1, 1]
+
+  val <- log(kappa) + log(lambda) + (kappa - 1) * log(w + dTime) - lambda * (w + dTime)^kappa
+  return(-val)
 }
 
 # Posterior up to a proportionality constant
@@ -167,28 +184,12 @@ PostWVL <- function(w, ...) {
   return(exp(-LogPostWVL(w, ...)))
 }
 
+PostWAIDS <- function(w, ...) {
+  return(suppressWarnings(exp(-LogPostWAIDS(w, ...))))
+}
+
 # Vectorize the functions as the "integrate" function works with vectorized functions
 VPostW <- Vectorize(PostW, vectorize.args = c('w'))
 VPostWCD4 <- Vectorize(PostWCD4, vectorize.args = c('w'))
 VPostWVL <- Vectorize(PostWVL, vectorize.args = c('w'))
-
-# AIDS only cases
-LogPostWAIDS <- function(
-  w,
-  x,
-  dTime,
-  betaAIDS,
-  kappa
-) {
-  x[3] <- x[3] - w
-  lambda <- exp(x %*% betaAIDS)
-
-  val <- log(kappa) + log(lambda) + (kappa - 1) * log(w + dTime) - lambda * (w + dTime)^kappa
-  return(-val)
-}
-
-PostWAIDS <- function(w, ...) {
-  return(exp(-LogPostWAIDS(w, ...)))
-}
-
 VPostWAIDS <- Vectorize(PostWAIDS, vectorize.args = c('w'))

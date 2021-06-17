@@ -23,7 +23,6 @@ Task <- R6::R6Class(
       args = list(),
       successCallback = NULL,
       failCallback = NULL,
-      progressCallback = NULL,
       progressRefresh = 2,
       session = NULL,
       autorun = TRUE
@@ -32,7 +31,6 @@ Task <- R6::R6Class(
       private$Args <- args
       private$SuccessCallback <- successCallback
       private$FailCallback <- failCallback
-      private$ProgressCallback <- progressCallback
       private$ProgressRefresh <- progressRefresh
       private$Session <- session
       private$Autorun <- autorun
@@ -105,8 +103,6 @@ Task <- R6::R6Class(
 
     # On-fail callback function
     FailCallback = NULL,
-
-    ProgressCallback = NULL,
 
     # Progress refresh timeout in seconds
     ProgressRefresh = 2,

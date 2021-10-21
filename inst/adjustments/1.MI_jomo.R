@@ -43,10 +43,7 @@ list(
     )
   ),
 
-  # Names of packages that must be made available to the adjustment function ----
-  RequiredPackageNames = c('jomo'),
-
-  ## Adjustment function ----
+  # Adjustment function ----
   AdjustmentFunction = function(inputData, parameters) {
 
     require(data.table, quietly = TRUE)

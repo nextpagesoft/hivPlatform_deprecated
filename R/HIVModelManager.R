@@ -172,7 +172,10 @@ HIVModelManager <- R6::R6Class(
             aggrDataSelection,
             randomSeed
           ) {
-            suppressMessages(pkgload::load_all())
+            if (!require('hivPlatform', quietly = TRUE)) {
+              suppressMessages(pkgload::load_all())
+            }
+
             options(width = 120)
             .Random.seed <- randomSeed # nolint
 
@@ -383,7 +386,10 @@ HIVModelManager <- R6::R6Class(
             aggrDataSelection,
             randomSeed
           ) {
-            suppressMessages(pkgload::load_all())
+            if (!require('hivPlatform', quietly = TRUE)) {
+              suppressMessages(pkgload::load_all())
+            }
+
             options(width = 120)
             .Random.seed <- randomSeed # nolint
 

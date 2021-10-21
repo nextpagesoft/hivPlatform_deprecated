@@ -4,7 +4,12 @@
 \alias{GetListObject}
 \title{GetListObject}
 \usage{
-GetListObject(fileName, section = NULL, includeFileName = TRUE)
+GetListObject(
+  fileName,
+  section = NULL,
+  includeFileName = TRUE,
+  envir = parent.frame()
+)
 }
 \arguments{
 \item{fileName}{Name of list file. Required.}
@@ -15,6 +20,9 @@ Default = NULL.}
 
 \item{includeFileName}{Logical indicating to include file name in the returned list as field
 "FileName". Optional. Default = TRUE.}
+
+\item{envir}{Environment in which the list script should be evaluated. Optional.
+Default = \code{parent.frame()}}
 }
 \value{
 List object.

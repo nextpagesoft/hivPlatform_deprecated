@@ -8,6 +8,8 @@
 #'   Default = NULL.
 #' @param includeFileName Logical indicating to include file name in the returned list as field
 #'   "FileName". Optional. Default = TRUE.
+#' @param envir Environment in which the list script should be evaluated. Optional.
+#'   Default = \code{parent.frame()}
 #'
 #' @return List object.
 #'
@@ -22,12 +24,13 @@
 GetListObject <- function(
   fileName,
   section = NULL,
-  includeFileName = TRUE
+  includeFileName = TRUE,
+  envir = parent.frame()
 ) {
   stopifnot(!missing(fileName))
 
   # Get entire list
-  listObject <- eval(expr = parse(file = fileName), envir = .GlobalEnv)
+  listObject <- eval(expr = parse(file = fileName), envir = envir)
   if (includeFileName) {
     listObject$FileName <- fileName
   }

@@ -1,3 +1,17 @@
+#' GetBootstrapFitStats
+#'
+#' Get bootstrap fits statistics
+#'
+#' @param fits fits
+#'
+#' @return list
+#'
+#' @examples
+#' \dontrun{
+#' GetBootstrapFitStats(fits)
+#' }
+#'
+#' @export
 GetBootstrapFitStats <- function(
   fits
 ) {

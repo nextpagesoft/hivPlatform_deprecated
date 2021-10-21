@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' GetHIVPlotData <- function(
+#' GetHIVPlotData(
 #'   mainFitResult,
 #'   bootstrapFitStats
 #' )

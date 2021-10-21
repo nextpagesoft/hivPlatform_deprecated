@@ -10,6 +10,6 @@ Improves accuracy of HIV estimates in EU/EEA countries.
 \author{
 Author: Magdalena Rosinska \email{<mrosinska@pzh.gov.pl>}\cr
 Author: Nikos Pantazis \email{<npantaz@med.uoa.gr>}\cr
-Author: Janusz Janiec \email{<jjaniec@pzh.gov.pl>}\cr
+Author: Ard van Sighem \email{<a.i.vansighem@amsterdamumc.nl>}\cr
 Creator: Daniel Lewandowski \email{<daniel@nextpagesoft.net>}
 }

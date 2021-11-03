@@ -1,10 +1,10 @@
 {
   "R": {
-    "Version": "4.1.1",
+    "Version": "4.1.2",
     "Repositories": [
       {
-        "Name": "RSPM",
-        "URL": "https://packagemanager.rstudio.com/all/latest"
+        "Name": "CRAN",
+        "URL": "https://cloud.r-project.org"
       }
     ]
   },
@@ -81,10 +81,10 @@
     },
     "backports": {
       "Package": "backports",
-      "Version": "1.2.1",
+      "Version": "1.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "644043219fc24e190c2f620c1a380a69"
+      "Hash": "194ad71f8ed59393272a0c4be2eac215"
     },
     "base64enc": {
       "Package": "base64enc",
@@ -102,10 +102,10 @@
     },
     "broom": {
       "Package": "broom",
-      "Version": "0.7.9",
+      "Version": "0.7.10",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "9b1e2c1f75b349e3ffa7e9c69eec0c52"
+      "Hash": "ddf8bc55ea050f984835dd2d23cd6828"
     },
     "bslib": {
       "Package": "bslib",
@@ -137,10 +137,10 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.0.1",
+      "Version": "3.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e3ae5d68dea0c55a12ea12a9fda02e61"
+      "Hash": "66a3834e54593c89d8beefb312347e58"
     },
     "codetools": {
       "Package": "codetools",
@@ -172,17 +172,17 @@
     },
     "cpp11": {
       "Package": "cpp11",
-      "Version": "0.4.0",
+      "Version": "0.4.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "40ba3fd26c8f61d8d14d334bc7761df9"
+      "Hash": "70976176dfd7f179f212783aab2547b1"
     },
     "crayon": {
       "Package": "crayon",
-      "Version": "1.4.1",
+      "Version": "1.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e75525c55c70e5f4f78c9960a4b402e9"
+      "Hash": "0a6a65d92bd45b47b94b84244b528d17"
     },
     "data.table": {
       "Package": "data.table",
@@ -270,17 +270,17 @@
     },
     "future": {
       "Package": "future",
-      "Version": "1.22.1",
+      "Version": "1.23.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "9c56382c3e53f0b4fc0fc16d88fc3974"
+      "Hash": "7bf6fbed7f00cae876901fd70c04f3a4"
     },
     "generics": {
       "Package": "generics",
-      "Version": "0.1.0",
+      "Version": "0.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4d243a9c10b00589889fe32314ffd902"
+      "Hash": "3f6bcfb0ee5d671d9fd1893d2faa79cb"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -492,10 +492,10 @@
     },
     "nloptr": {
       "Package": "nloptr",
-      "Version": "1.2.2.2",
+      "Version": "1.2.2.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "2737faeee353704efec5afa1e943dd64"
+      "Hash": "22eeb1eb7129a2ca17b8eb70b56a02fe"
     },
     "numDeriv": {
       "Package": "numDeriv",

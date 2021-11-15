@@ -7,12 +7,14 @@
 #' @return data.table
 #'
 #' @examples
-#' inputData <- data.table::data.table(FullRegionOfOrigin = c('REPCOUNTRY', 'SUBAFR', 'SUBAFR', 'UNK'))
+#' inputData <-
+#'   data.table::data.table(FullRegionOfOrigin = c('REPCOUNTRY', 'SUBAFR', 'SUBAFR', 'UNK'))
 #' GetOriginDistribution(inputData)
 #'
 #' @export
-GetOriginDistribution <- function(inputData)
-{
+GetOriginDistribution <- function(
+  inputData
+) {
   distr <- inputData[, .(count = .N), by = .(origin = FullRegionOfOrigin)]
   distr[is.na(origin), origin := 'UNK']
   distr <- distr[order(-count)]

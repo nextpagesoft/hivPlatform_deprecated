@@ -23,7 +23,7 @@ LogPostW <- function(
   fxCD4 <- formula(
     YVar ~
     I(DTime + w) * Gender +
-      I(DTime + w) * GroupedRegion +
+      I(DTime + w) * GroupedRegionOfOrigin +
       I(DTime + w) * Mode +
       I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
@@ -35,11 +35,11 @@ LogPostW <- function(
   fxVR <- formula(
     YVar ~
     I(DTime + w) * Gender +
-      I(DTime + w) * GroupedRegion +
+      I(DTime + w) * GroupedRegionOfOrigin +
       I(DTime + w) * Mode +
       I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       I(log(DTime + w + 0.013)) * Gender +
-      I(log(DTime + w + 0.013)) * GroupedRegion +
+      I(log(DTime + w + 0.013)) * GroupedRegionOfOrigin +
       I(log(DTime + w + 0.013)) * Mode +
       I(log(DTime + w + 0.013)) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
@@ -49,8 +49,8 @@ LogPostW <- function(
 
   # Combine into one design matrix
   x <- rbind(
-    cbind(matrix(0, nr = dimVR[1], nc = dimCD4[2]), xVR),
-    cbind(xCD4, matrix(0, nr = dimCD4[1], nc = dimVR[2]))
+    cbind(matrix(0, nrow = dimVR[1], ncol = dimCD4[2]), xVR),
+    cbind(xCD4, matrix(0, nrow = dimCD4[1], ncol = dimVR[2]))
   )
 
   # Formula for the design matrices of the random effects
@@ -91,7 +91,7 @@ LogPostWCD4 <- function(
   fxCD4 <- formula(
     YVar ~
       I(DTime + w) * Gender +
-      I(DTime + w) * GroupedRegion +
+      I(DTime + w) * GroupedRegionOfOrigin +
       I(DTime + w) * Mode +
       I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
@@ -132,12 +132,12 @@ LogPostWVL <- function(
   fxVR <- formula(
     YVar ~
     I(DTime + w) * Gender +
-      I(DTime + w) * GroupedRegion +
+      I(DTime + w) * GroupedRegionOfOrigin +
       I(DTime + w) * Mode +
       I(DTime + w) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       I(log(DTime + w + 0.013)) * Gender +
-      I(log(DTime + w + 0.013)) * GroupedRegion +
-      I(log(DTime + w + 0.013)) * Transmission +
+      I(log(DTime + w + 0.013)) * GroupedRegionOfOrigin +
+      I(log(DTime + w + 0.013)) * Mode +
       I(log(DTime + w + 0.013)) * lspline::lspline(I(Age - w), knots = c(25, 35, 45)) +
       lspline::lspline(I(Calendar - w), knots = c(16, 22))
   )

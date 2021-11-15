@@ -1,0 +1,50 @@
+---
+name: "Migrant Module Intermediate"
+author: "HIV Platform tool"
+title: "Infections among migrants prior and post arrival at the country of destination"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_fragment:
+    number_sections: no
+    smart: yes
+    fig_caption: yes
+params:
+  Missingness: NA
+editor_options:
+  chunk_output_type:console
+---
+```{r setup, include = FALSE}
+require(hivPlatform, quietly = TRUE)
+knitr::opts_chunk$set(
+  echo = FALSE, results = "asis", message = FALSE, warning = FALSE, include = TRUE
+)
+```
+
+## 1. Overview
+
+CAUTION:
+
+Estimates of the time of infection require the following variables: Sex, transmission category,
+Region of Origin, AIDS diagnosis. CD4 count and VL are used if available. In addition, the time of
+infection must be compared to the arrival time and the estimation based on the cases for which both
+Year of Arrival and Year of Diagnosis are known.
+
+It is possible to run the migration estimation on the original dataset, but it is recommended to
+use the imputation first.
+
+The estimation is performed for adults only.
+
+Cases excluded due to missing values:
+
+```{r, eval = TRUE}
+knitr::kable(
+  params$Missingness,
+  align = rep('r', ncol(params$Missingness)),
+  col.names = c('Missing variable', 'Number of excluded cases')
+)
+```
+
+## 2. Description of data used in estimation
+
+
+## 3. Estimates of the proportion of the migrants infected prior and post arrival

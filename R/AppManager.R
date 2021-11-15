@@ -150,7 +150,10 @@ AppManager <- R6::R6Class(
 
         private$Catalogs$ReportTask <- Task$new(
           function(reportSpec, fileName, filters, adjustedData, randomSeed) {
-            suppressMessages(pkgload::load_all())
+            if (!requireNamespace('hivPlatform', quietly = TRUE)) {
+              suppressMessages(pkgload::load_all())
+            }
+
             .Random.seed <- randomSeed #nolint
 
             reportFilePath <- hivPlatform::GetReportFileNames()[reportSpec$name]

@@ -3,7 +3,8 @@ ConvertOriginGroupingDtToList <- function(dtMap) {
   listMap <- lapply(groupNames, function(groupName) {
     list(
       name = groupName,
-      origin = dtMap[name == groupName, sort(unique(origin))]
+      origin = dtMap[name == groupName, sort(unique(origin))],
+      migrant = dtMap[name == groupName, sort(unique(migrant))]
     )
   })
   return(listMap)

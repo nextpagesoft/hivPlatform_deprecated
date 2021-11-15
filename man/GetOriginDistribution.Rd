@@ -16,7 +16,8 @@ data.table
 Get distribution of RegionOfOrigin
 }
 \examples{
-inputData <- data.table::data.table(FullRegionOfOrigin = c('REPCOUNTRY', 'SUBAFR', 'SUBAFR', 'UNK'))
+inputData <-
+  data.table::data.table(FullRegionOfOrigin = c('REPCOUNTRY', 'SUBAFR', 'SUBAFR', 'UNK'))
 GetOriginDistribution(inputData)
 
 }

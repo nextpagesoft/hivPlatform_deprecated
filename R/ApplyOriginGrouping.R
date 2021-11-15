@@ -27,11 +27,11 @@ ApplyOriginGrouping <- function(
       origin = origin
     )
   }
-
+  inputData[, GroupedRegionOfOrigin := 'UNK']
   inputData[
     dtMap,
     GroupedRegionOfOrigin := name,
-    on = c('FullRegionOfOrigin' = 'origin')
+    on = .(FullRegionOfOrigin = origin)
   ]
 
   inputData[, GroupedRegionOfOrigin := factor(GroupedRegionOfOrigin)]

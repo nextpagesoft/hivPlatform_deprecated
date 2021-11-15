@@ -4,10 +4,12 @@
 \alias{GetInputDataValidityStatus}
 \title{GetInputDataValidityStatus}
 \usage{
-GetInputDataValidityStatus(inputData)
+GetInputDataValidityStatus(inputData, columnSpecs = NULL)
 }
 \arguments{
 \item{inputData}{Input data. Required.}
+
+\item{columnSpecs}{columnSpecs}
 }
 \value{
 list

@@ -63,7 +63,7 @@ RenderReportToFile <- function(
     run_pandoc = TRUE,
     clean = TRUE,
     quiet = TRUE,
-    envir = new.env(parent = globalenv()),
+    envir = new.env(),
     ...
   )
 

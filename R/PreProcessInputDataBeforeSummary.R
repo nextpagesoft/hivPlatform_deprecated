@@ -13,7 +13,7 @@
 #' }
 #'
 #' @export
-PreProcessInputDataBeforeSummary <- function(
+PreProcessInputDataBeforeSummary <- function( # nolint
   inputData,
   seed = NULL
 ) {
@@ -23,21 +23,15 @@ PreProcessInputDataBeforeSummary <- function(
     return(NULL)
   }
 
-  # Merge RegionOfBirth and RegionOfNationality
-  inputData[
-    unique(countryData[, .(CountryOfBirth = Code, RegionOfBirth = TESSyCode)]),
-    RegionOfBirth := RegionOfBirth,
-    on = .(CountryOfBirth)
-  ]
-  inputData[
-    unique(countryData[, .(CountryOfNationality = Code, RegionOfNationality = TESSyCode)]),
-    RegionOfNationality := RegionOfNationality,
-    on = .(CountryOfNationality)
-  ]
+  # Merge RegionOfBirth
+  inputData[countryData, RegionOfBirth := i.TESSyCode, on = .(CountryOfBirth = Code)]
   inputData[
     !is.na(CountryOfBirth) & CountryOfBirth %chin% ReportingCountry,
     RegionOfBirth := 'REPCOUNTRY'
   ]
+
+  # Merge RegionOfNationality
+  inputData[countryData, RegionOfNationality := i.TESSyCode, on = .(CountryOfNationality = Code)]
   inputData[
     !is.na(CountryOfNationality) & CountryOfNationality %chin% ReportingCountry,
     RegionOfNationality := 'REPCOUNTRY'
@@ -61,34 +55,35 @@ PreProcessInputDataBeforeSummary <- function(
       !CountryOfNationality %chin% ReportingCountry,
     FullRegionOfOrigin := RegionOfNationality
   ]
+  inputData[is.na(FullRegionOfOrigin), FullRegionOfOrigin := 'UNK']
 
-  # Cache country codes for countries of Sub-Saharan Africa
-  ssaCountryCodes <- countryData[SubRegionName == 'Sub-Saharan Africa', unique(Code)]
-  # Create GroupOfOrigin variable 1, 2, 3...
-  inputData[, GroupOfOrigin := factor(NA, levels = c('Reporting Country', 'Other Country', 'SSA'))]
-  # ...based on RegionOfOrigin if not NA
-  inputData[
-    !is.na(RegionOfOrigin),
-    GroupOfOrigin := ifelse(
-      RegionOfOrigin == 'REPCOUNTRY', 1L, ifelse(!RegionOfOrigin %chin% 'SUBAFR', 2L, 3L)
-    )
-  ]
-  # ...based on CountryOfBirth if not NA
-  inputData[
-    is.na(GroupOfOrigin) & !is.na(CountryOfBirth),
-    GroupOfOrigin := ifelse(
-      CountryOfBirth == ReportingCountry, 1L, ifelse(!CountryOfBirth %chin% ssaCountryCodes, 2L, 3L)
-    )
-  ]
-  # ...based on CountryOfNationality if not NA
-  inputData[
-    is.na(GroupOfOrigin) & !is.na(CountryOfNationality),
-    GroupOfOrigin := ifelse(
-      CountryOfNationality == ReportingCountry,
-      1L,
-      ifelse(!CountryOfNationality %chin% ssaCountryCodes, 2L, 3L)
-    )
-  ]
+  # # Cache country codes for countries of Sub-Saharan Africa
+  # ssaCountryCodes <- countryData[SubRegionName == 'Sub-Saharan Africa', unique(Code)]
+  # # Create GroupOfOrigin variable 1, 2, 3...
+  # inputData[, GroupOfOrigin := factor(NA, levels = c('Reporting Country', 'Other Country', 'SSA'))]
+  # # ...based on RegionOfOrigin if not NA
+  # inputData[
+  #   !is.na(RegionOfOrigin),
+  #   GroupOfOrigin := ifelse(
+  #     RegionOfOrigin == 'REPCOUNTRY', 1L, ifelse(!RegionOfOrigin %chin% 'SUBAFR', 2L, 3L)
+  #   )
+  # ]
+  # # ...based on CountryOfBirth if not NA
+  # inputData[
+  #   is.na(GroupOfOrigin) & !is.na(CountryOfBirth),
+  #   GroupOfOrigin := ifelse(
+  #     CountryOfBirth == ReportingCountry, 1L, ifelse(!CountryOfBirth %chin% ssaCountryCodes, 2L, 3L)
+  #   )
+  # ]
+  # # ...based on CountryOfNationality if not NA
+  # inputData[
+  #   is.na(GroupOfOrigin) & !is.na(CountryOfNationality),
+  #   GroupOfOrigin := ifelse(
+  #     CountryOfNationality == ReportingCountry,
+  #     1L,
+  #     ifelse(!CountryOfNationality %chin% ssaCountryCodes, 2L, 3L)
+  #   )
+  # ]
 
   # Transform CD4
   inputData[, SqCD4 := sqrt(FirstCD4Count)]

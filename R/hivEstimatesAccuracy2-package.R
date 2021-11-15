@@ -11,7 +11,7 @@
 #' @author
 #' Author: Magdalena Rosinska \email{<mrosinska@@pzh.gov.pl>}\cr
 #' Author: Nikos Pantazis \email{<npantaz@@med.uoa.gr>}\cr
-#' Author: Janusz Janiec \email{<jjaniec@@pzh.gov.pl>}\cr
+#' Author: Ard van Sighem \email{<a.i.vansighem@amsterdamumc.nl>}\cr
 #' Creator: Daniel Lewandowski \email{<daniel@@nextpagesoft.net>}
 #'
 #' @importFrom grDevices dev.control dev.off hcl pdf recordPlot
@@ -25,10 +25,3 @@
 #' @import ggplot2
 #'
 NULL
-
-#' Country names, codes, regions information
-#'
-#' A dataset containing country codes in two-letter format
-#'
-#' @format data.table
-"countryData"

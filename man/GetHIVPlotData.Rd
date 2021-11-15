@@ -19,7 +19,7 @@ Get HIV plot data
 }
 \examples{
 \dontrun{
-GetHIVPlotData <- function(
+GetHIVPlotData(
   mainFitResult,
   bootstrapFitStats
 )

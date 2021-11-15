@@ -3,6 +3,7 @@
 #' Validate input data.
 #'
 #' @param inputData Input data. Required.
+#' @param columnSpecs columnSpecs
 #'
 #' @return list
 #'
@@ -12,8 +13,10 @@
 #' }
 #'
 #' @export
-GetInputDataValidityStatus <- function(inputData)
-{
+GetInputDataValidityStatus <- function(
+  inputData,
+  columnSpecs = NULL
+) {
   stopifnot(!missing(inputData))
 
   inputData <- copy(inputData)
@@ -22,10 +25,12 @@ GetInputDataValidityStatus <- function(inputData)
     return(NULL)
   }
 
-  columnSpecs <- GetListObject(
-    GetSystemFile('referenceData/requiredColumns.R'),
-    includeFileName = FALSE
-  )
+  if (is.null(columnSpecs)) {
+    columnSpecs <- GetListObject(
+      GetSystemFile('referenceData/requiredColumns.R'),
+      includeFileName = FALSE
+    )
+  }
 
   checkStatus <- list()
   for (columnName in names(columnSpecs)) {

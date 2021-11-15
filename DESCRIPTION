@@ -1,8 +1,8 @@
 Package: hivPlatform
 Type: Package
 Title: Improves Accuracy of HIV Estimates in EU/EEA Countries
-Version: 2.0.1
-Date: 2021-05-30
+Version: 2.0.4
+Date: 2021-11-03
 Authors@R: c(person('Magdalena', 'Rosinska', email = 'mrosinska@pzh.gov.pl',
     role = c('aut', 'cph')), person('Nikos', 'Pantazis', email =
     'npantaz@med.uoa.gr', role = c('aut')), person('Ard', 'van Sighem',
@@ -11,7 +11,7 @@ Authors@R: c(person('Magdalena', 'Rosinska', email = 'mrosinska@pzh.gov.pl',
 Maintainer: Daniel Lewandowski <daniel@nextpagesoft.net>
 Description: Improves the accuracy of HIV estimates in EU/EEA countries.
 License: file LICENSE
-Depends: R (>= 3.1.0)
+Depends: R (>= 3.5.0)
 Imports:
     callr (>= 3.4.3),
     cli (>= 2.0.2),
@@ -38,9 +38,10 @@ Imports:
     shiny (>= 1.4.0),
     scales (>= 1.1.1),
     SparseM (>= 1.78),
+    stringi (>= 1.7.5),
     yaml (>= 2.2.1),
     xml2 (>= 1.3.2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: testthat

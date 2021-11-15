@@ -1,4 +1,4 @@
-PredictInf <- function(
+PredictInf <- function( # nolint
   input,
   params
 ) {
@@ -53,7 +53,7 @@ PredictInf <- function(
         width = countAIDSNChar * 2 + 1
       )
       PrintAlert(
-        '{percComplete} ({iterComplete}) - {.timestamp {prettyunits::pretty_dt(currentTime - startTime)}}', #nolint
+        '{percComplete} ({iterComplete}) - {.timestamp {prettyunits::pretty_dt(currentTime - startTime)}}', # nolint
         type = 'success'
       )
       lastTime <- currentTime
@@ -90,7 +90,7 @@ PredictInf <- function(
       width = countAIDSNChar * 2 + 1
     )
     PrintAlert(
-      '{percComplete} ({iterComplete}) - {.timestamp {prettyunits::pretty_dt(endTime - startTime)}}',
+      '{percComplete} ({iterComplete}) - {.timestamp {prettyunits::pretty_dt(endTime - startTime)}}', # nolint
       type = 'success'
     )
   } else {
@@ -130,7 +130,7 @@ PredictInf <- function(
 
     dt <- outputCD4VL[UniqueId == uniqueId]
 
-    x <- dt[, .(Gender, GroupedRegion, Mode, Age, DTime, Calendar, Consc, Consr)]
+    x <- dt[, .(Gender, GroupedRegionOfOrigin, Mode, Age, DTime, Calendar, Consc, Consr)]
     y <- dt[, .(YVar)]
     z <- dt[, .(Consc, CobsTime, Consr, RobsTime, RLogObsTime2, DTime)]
     migTime <- dt[Ord == 1, Mig]

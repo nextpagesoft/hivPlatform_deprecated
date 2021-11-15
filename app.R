@@ -2,7 +2,8 @@
 library(data.table)
 
 # Load hivPlatform package
-pkgload::load_all(path = '.', export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
+try(pkgload::unload(), silent = TRUE)
+pkgload::load_all(path = '.', export_all = TRUE, helpers = FALSE, attach_testthat = FALSE)
 
 options(shiny.maxRequestSize = 100 * 1024^2)
 shiny::shinyApp(AppUI, AppServer)

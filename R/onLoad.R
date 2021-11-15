@@ -1,8 +1,8 @@
 .onLoad <- function(libname, pkgname) {
-  shiny::registerInputHandler('OriginGroupingArray', ConvertOriginGroupingArray)
-  shiny::registerInputHandler('AttrMappingArray', ConvertAttrMappingArray)
-  shiny::registerInputHandler('AggrFilters', ConvertAggrFilters)
-  shiny::registerInputHandler('HIVModelParams', ConvertHIVModelParams)
+  shiny::registerInputHandler('OriginGroupingArray', ConvertOriginGroupingArray, force = TRUE)
+  shiny::registerInputHandler('AttrMappingArray', ConvertAttrMappingArray, force = TRUE)
+  shiny::registerInputHandler('AggrFilters', ConvertAggrFilters, force = TRUE)
+  shiny::registerInputHandler('HIVModelParams', ConvertHIVModelParams, force = TRUE)
 
   invisible(NULL)
 }

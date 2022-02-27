@@ -37,7 +37,8 @@ AggrDataManager <- R6::R6Class(
 
     # 1. Read case-based data ----------------------------------------------------------------------
     ReadData = function(
-      fileName
+      filePath,
+      fileName = basename(filePath)
     ) {
       if (!is.null(private$AppMgr) && !is.element(
         private$AppMgr$Steps['SESSION_INITIALIZED'],
@@ -53,30 +54,40 @@ AggrDataManager <- R6::R6Class(
       status <- 'SUCCESS'
       msg <- 'Data read correctly'
       tryCatch({
-        data <- hivModelling::ReadInputData(fileName)
-        dataYears <- lapply(data, '[[', 'Year')
-        dataNames <- names(data)
-        dataTypesGroupings <- c('^Dead$', '^AIDS$', '^(HIV|HIVAIDS)$', '^HIV_CD4_[1-4]{1}$')
-        dataFiles <- lapply(dataTypesGroupings, function(grouping) {
-          names <- grep(grouping, dataNames, value = TRUE)
-          years <- Filter(function(x) length(x) > 0, dataYears[names])
-          if (length(years) > 0) {
-            minYear <- min(sapply(years, min, na.rm = TRUE))
-            maxYear <- max(sapply(years, max, na.rm = TRUE))
-            return(list(
-              name = paste(names, collapse = ', '),
-              use = TRUE,
-              years = c(minYear, maxYear)
-            ))
-          } else {
-            return(NULL)
+        data <- hivModelling::ReadInputData(filePath)
+        fileInfo <- file.info(filePath)
+        if (!fileInfo$isdir && tolower(tools::file_ext(filePath)) == 'csv') {
+          names(data) <- tools::file_path_sans_ext(fileName)
+        }
+        if (is.null(data)) {
+          status <- 'FAIL'
+          msg <- 'No data to load found'
+        } else {
+          dataYears <- lapply(data, '[[', 'Year')
+          dataNames <- names(data)
+          dataTypesGroupings <- c('^Dead$', '^AIDS$', '^(HIV|HIVAIDS)$', '^HIV_CD4_[1-4]{1}$')
+          dataFiles <- lapply(dataTypesGroupings, function(grouping) {
+            names <- grep(grouping, dataNames, value = TRUE)
+            years <- Filter(function(x) length(x) > 0, dataYears[names])
+            if (length(years) > 0) {
+              minYear <- min(sapply(years, min, na.rm = TRUE))
+              maxYear <- max(sapply(years, max, na.rm = TRUE))
+              return(list(
+                name = paste(names, collapse = ', '),
+                use = TRUE,
+                years = c(minYear, maxYear)
+              ))
+            } else {
+              return(NULL)
+            }
+          })
+          dataFiles <- Filter(Negate(is.null), dataFiles)
+          dataRangeYears <- sapply(dataFiles, '[[', 'years')
+          populationNames <- NULL
+          if (is.matrix(dataRangeYears)) {
+            rangeYears <- c(min(dataRangeYears), max(dataRangeYears))
+            populationNames <- names(data[[1]])[-1]
           }
-        })
-        dataFiles <- Filter(Negate(is.null), dataFiles)
-        dataRangeYears <- sapply(dataFiles, '[[', 'years')
-        if (is.matrix(dataRangeYears)) {
-          rangeYears <- c(min(dataRangeYears), max(dataRangeYears))
-          populationNames <- names(data[[1]])[-1]
         }
       },
       error = function(e) {
@@ -85,13 +96,13 @@ AggrDataManager <- R6::R6Class(
       })
 
       if (status == 'SUCCESS') {
-        private$Catalogs$FileName <- fileName
+        private$Catalogs$FileName <- filePath
         private$Catalogs$Data <- data
         private$Catalogs$PopulationNames <- populationNames
         if (!is.null(private$AppMgr)) {
           private$AppMgr$SetCompletedStep('AGGR_READ')
         }
-        PrintAlert('Data file {.file {fileName}} loaded')
+        PrintAlert('Data file {.file {filePath}} loaded')
         payload <- list(
           ActionStatus = status,
           ActionMessage = msg,
@@ -103,7 +114,7 @@ AggrDataManager <- R6::R6Class(
           private$AppMgr$HIVModelMgr$DetermineYearRanges()
         }
       } else {
-        PrintAlert('Loading data file {.file {fileName}} failed', type = 'danger')
+        PrintAlert('Loading data file {.file {filePath}} failed', type = 'danger')
         payload <- list(
           ActionStatus = status,
           ActionMessage = msg

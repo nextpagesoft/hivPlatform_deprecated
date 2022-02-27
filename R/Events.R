@@ -223,7 +223,7 @@ Events <- function(
         FilePath = fileInfo$datapath[1]
       )
     )
-    appMgr$AggrMgr$ReadData(fileInfo$datapath)
+    appMgr$AggrMgr$ReadData(fileInfo$datapath[1], fileInfo$name[1])
   })
 
   observeEvent(input$attrMapping, {

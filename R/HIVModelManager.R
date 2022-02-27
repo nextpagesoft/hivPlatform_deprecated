@@ -97,15 +97,6 @@ HIVModelManager <- R6::R6Class(
         dataSets <- Filter(function(dt) nrow(dt) > 0, dataSets)
         optimalYears <- hivModelling::GetAllowedYearRanges(dataSets)
         rangeYears <- lapply(dataSets, function(dt) dt[, c(min(Year), max(Year))])
-
-        # nolint start
-        # intervals <- hivModelling::GetIntervalsFromData(
-        #   minYear = years[['All']][[1]],
-        #   maxYear = years[['All']][[2]],
-        #   numIntervals = 5,
-        #   firstIntervalEndYear = 1984
-        # )
-        # nolint end
       }, error = function(e) {
         status <<- 'FAIL'
         msg <<- 'There was a difficulty encountered when determining year ranges.'

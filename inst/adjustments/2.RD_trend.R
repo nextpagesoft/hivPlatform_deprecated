@@ -192,8 +192,6 @@ list(
 
       if (IsError(univAnalysis)) {
         univAnalysis <- data.table()
-
-        PrintAlert
       }
 
       # --------------------------------------------------------------------------------------------
@@ -277,7 +275,7 @@ list(
         Source = ifelse(Imputation == 0, 'Reported', 'Imputed')
       )]
       outputData <- merge(
-        outputData,
+        outputData[, -c('Weight')],
         fitStratum[, c(..mergeVars, 'P', 'Weight', 'Var')],
         by = mergeVars,
         all.x = TRUE

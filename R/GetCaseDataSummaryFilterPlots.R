@@ -35,7 +35,11 @@ GetCaseDataSummaryFilterPlots <- function(
   )
 
   # Notification quarter plot
-  notifQuarterCounts <- data[, .(Count = .N), keyby = .(Gender, NotificationTime)]
+  notifQuarterCounts <- data[
+    !is.na(NotificationTime),
+    .(Count = .N),
+    keyby = .(Gender, NotificationTime)
+  ]
   notifQuarterCounts <- dcast(notifQuarterCounts, 'NotificationTime ~ Gender', value.var = 'Count')
   missingCols <- genders[!genders %in% colnames(notifQuarterCounts)]
   if (length(missingCols) > 0) {

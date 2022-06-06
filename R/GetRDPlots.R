@@ -83,7 +83,7 @@ GetRDPlots <- function(
                                           linetype = 'blank'),
           strip.placement = 'outside',
           strip.text = element_text(size = 8),
-          axis.text.x = element_text(size = 8),
+          axis.text.x = element_text(size = 8, angle = 90, vjust = 0.5),
           axis.text.y = element_text(size = 8)) +
     xlab('Diagnosis year') +
     ylab('Count of HIV cases')

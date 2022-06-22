@@ -57,9 +57,9 @@ list(
     compData <- copy(inputData)
 
     # Start year
-    startYear <- parameters$startYear
+    startYear <- parameters$startYear + 0.125
     # End quarter
-    endQrt <- parameters$endYear + parameters$endQrt / 4
+    endQrt <- parameters$endYear + parameters$endQrt / 4 - 0.125
     # Stratifiation columns
     stratVarNames <- c()
     if (parameters$stratGender) {
@@ -93,14 +93,13 @@ list(
 
     compData <- compData[
       VarX >= 0 &
-        DiagnosisTime >= (startYear + 0.125) &
+        DiagnosisTime >= startYear &
         NotificationTime <= endQrt
     ]
 
     compData[, ':='(
       VarT = 4 * (pmin.int(MaxNotificationTime, endQrt) - DiagnosisTime) + 1,
-      Tf = 4 * (pmin.int(MaxNotificationTime, endQrt) -
-            pmax.int(min(DiagnosisTime), startYear + 0.125)) + 1,
+      Tf = 4 * (pmin.int(MaxNotificationTime, endQrt) - pmax.int(min(DiagnosisTime), startYear)) + 1, # nolint
       ReportingDelay = 1L
     )]
     compData[, ':='(
@@ -271,25 +270,30 @@ list(
       mergeVars <- union(stratVarNamesTrend, c('VarT', 'Imputation'))
       outputData[, ':='(
         YearOfHIVDiagnosisOrig = YearOfHIVDiagnosis,
-        YearOfHIVDiagnosis = pmax.int(lastYear - 4, YearOfHIVDiagnosis),
-        Source = ifelse(Imputation == 0, 'Reported', 'Imputed')
+        YearOfHIVDiagnosis = pmax.int(lastYear - 4, YearOfHIVDiagnosis)
       )]
-      outputData <- merge(
-        outputData[, -c('Weight')],
-        fitStratum[, c(..mergeVars, 'P', 'Weight', 'Var')],
-        by = mergeVars,
-        all.x = TRUE
-      )
-      outputData[, MissingData := is.na(Weight) | is.infinite(Weight)]
+      outputData[
+        fitStratum[, c(..mergeVars, 'Weight', 'P', 'Var')],
+        ':='(
+          Weight = i.Weight,
+          P = i.P,
+          Var = i.Var
+        ),
+        on = mergeVars
+      ]
+      outputData[, ':='(
+        YearOfHIVDiagnosis = YearOfHIVDiagnosisOrig,
+        YearOfHIVDiagnosisOrig = NULL
+      )]
+      outputData[, ':='(
+        Source = ifelse(Imputation == 0, 'Reported', 'Imputed'),
+        MissingData = is.na(Weight) | is.infinite(Weight)
+      )]
       outputData[MissingData == TRUE, ':='(
         Weight = 1,
         P = 1
       )]
       outputData[is.na(Var) | is.infinite(Var), Var := 0]
-      outputData[, ':='(
-        YearOfHIVDiagnosis = YearOfHIVDiagnosisOrig,
-        YearOfHIVDiagnosisOrig = NULL
-      )]
 
       # --------------------------------------------------------------------------------------------
 

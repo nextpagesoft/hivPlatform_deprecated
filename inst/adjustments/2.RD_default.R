@@ -61,9 +61,9 @@ list(
     stratSep <- '_'
 
     # Start year
-    startYear <- parameters$startYear
+    startYear <- parameters$startYear + 0.125
     # End quarter
-    endQrt <- parameters$endYear + parameters$endQrt / 4
+    endQrt <- parameters$endYear + parameters$endQrt / 4 - 0.125
     # Stratifiation columns
     stratVarNames <- c()
     if (parameters$stratGender) {
@@ -109,14 +109,13 @@ list(
 
     compData <- compData[
       VarX >= 0 &
-        DiagnosisTime >= (startYear + 0.125) &
+        DiagnosisTime >= startYear &
         NotificationTime <= endQrt
     ]
 
     compData[, ':='(
       VarT = 4 * (pmin.int(MaxNotificationTime, endQrt) - DiagnosisTime) + 1,
-      Tf = 4 * (pmin.int(MaxNotificationTime, endQrt) -
-            pmax.int(min(DiagnosisTime), startYear + 0.125)) + 1,
+      Tf = 4 * (pmin.int(MaxNotificationTime, endQrt) - pmax.int(min(DiagnosisTime), startYear)) + 1, # nolint
       ReportingDelay = 1L
     )]
     compData[, ':='(
@@ -242,9 +241,9 @@ list(
       outputData[
         fitStratum[, c('Stratum', 'VarT', 'Weight', 'P', 'Var'), with = FALSE],
         ':='(
-          Weight = Weight,
-          P = P,
-          Var = Var
+          Weight = i.Weight,
+          P = i.P,
+          Var = i.Var
         ),
         on = .(VarT, Stratum)
       ]

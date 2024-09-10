@@ -1,3 +1,1 @@
-Server implementation for HIV Estimates Accuracy tool.
-
-This is code based on R web framework, Shiny.
+This repository has been archived. It has been transferred to ECDC GitHub account and is currently available here: https://github.com/EU-ECDC/hivPlatform_deprecated
